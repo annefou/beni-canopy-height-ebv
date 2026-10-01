@@ -22,8 +22,8 @@
 # | Dataset | Role | Access |
 # |---|---|---|
 # | ESA BIOMASS L2A forest height `FP_FH__L2A` (200 m), 2026 | ecosystem height, wall to wall | ESA MAAP, **credentials** |
-# | NASA GEDI L2A V002 relative-height metrics (25 m footprints) | independent ecosystem height, for validation | NASA Earthdata, **credentials** |
-# | NASA GEDI L2B V002 canopy cover, foliage height diversity, plant area volume density profile (25 m footprints) | ecosystem cover, structural complexity, relative vertical profile | NASA Earthdata, **credentials** |
+# | NASA GEDI L2A V003 relative-height metrics (25 m footprints) | independent ecosystem height, for validation | NASA Earthdata, **credentials** |
+# | NASA GEDI L2B V003 canopy cover, foliage height diversity, plant area volume density profile (25 m footprints) | ecosystem cover, structural complexity, relative vertical profile | NASA Earthdata, **credentials** |
 # | ESA WorldCover 2021 v200 (10 m) | ecosystem focus group: tree cover | public; aggregated here to a 100 m tree-cover fraction |
 # | ESA Fire_cci SYN burned area pixel v1.1, 2024 | mask of cells disturbed between GEDI and BIOMASS | streamed by window in `02` |
 #
@@ -62,7 +62,7 @@ MAAP_CATALOG = "https://catalog.maap.eo.esa.int/catalogue"
 MAAP_IAM = "https://iam.maap.eo.esa.int/realms/esa-maap/protocol/openid-connect/token"
 # Public client of ESA MAAP's token-access example (not a personal credential).
 MAAP_PUBLIC_CLIENT = ("offline-token", "p1eL7uonXs6MDxtGbgKdPVRAmnGxHpVE")
-GEDI_START, GEDI_END = "2019-04-04", "2025-07-10"  # the whole GEDI L2A V002 record (CMR temporal extent)
+GEDI_START, GEDI_END = "2019-04-04", date.today().isoformat()  # the whole GEDI V003 record (CMR: 2019-04-04 onwards)
 
 
 def sha256(path: Path) -> str:
@@ -107,7 +107,12 @@ def maap_access_token() -> str:
 
 
 session = requests.Session()
-session.headers["Authorization"] = f"Bearer {maap_access_token()}"
+missing = [a["href"] for f in items for k, a in f["assets"].items()
+           if k in ("enclosure_i_fh_tiff", "enclosure_i_quality_tiff", "enclosure_xml")
+           and not (BIO_DIR / Path(a["href"]).name).exists()]
+if missing:  # a token is only needed when something is left to download
+    session.headers["Authorization"] = f"Bearer {maap_access_token()}"
+print(f"{len(missing)} BIOMASS files to download")
 bio_records, bio_files = [], []
 for f in items:
     p = f["properties"]
@@ -135,31 +140,43 @@ print(f"{len(bio_files)} BIOMASS files; processors: "
       f"{sorted({json.dumps(r['processor']) for r in bio_records})}")
 
 # %% [markdown]
-# ## GEDI L2A and L2B V002 footprints (NASA Earthdata)
+# ## GEDI L2A and L2B V003 footprints (NASA Earthdata, subset by NASA Harmony)
 #
-# Granules are streamed, not downloaded whole. Only the fields used are read, by name, wherever they sit inside
-# the beam group (the data dictionaries list them without their group paths):
+# Reading whole GEDI granules to keep the few footprints inside the box is slow (about 70 s per granule, and
+# the box crosses about 700 granules per product). NASA's **Harmony** service cuts each granule to the box on
+# NASA's side (its trajectory subsetter); for these collections it cannot also drop variables, so each subset
+# file is read for the fields below and then deleted. Jobs are one month each, and a finished month is recorded,
+# so a rerun resumes.
 #
-# - **L2A:** location, time, the relative-height metrics RH98 and RH100 (`rh`, "Relative height metrics at 1 %
-#   interval"), `quality_flag`, `degrade_flag`, `sensitivity`, `solar_elevation`.
+# Harmony serves **Version 3** of GEDI L2A/L2B. Field names and flags differ from V002 and are taken from the V3
+# data dictionaries and the GEDI L2 User Guide V3:
+#
+# - **L2A:** location, time, `rh` ("Relative height metrics at 1 % interval"; RH98 and RH100 kept),
+#   `l2a_quality_flag_rel3`, `degrade_flag`, `sensitivity`, `solar_elevation`.
 # - **L2B:** `cover` ("Total canopy cover, defined as the percent of the ground covered by the vertical projection
-#   of canopy material"; stored as a fraction 0–1), `fhd_normal` ("Foliage height diversity index"), `pavd_z`
-#   ("Vertical Plant Area Volume Density profile with a vertical step size of dZ", m² m⁻³), `dz`,
-#   `l2b_quality_flag`, `algorithmrun_flag`, plus the same location, time and quality fields.
+#   of canopy material", range 0–1, so a fraction), `fhd_normal` ("Foliage height diversity index"), `pavd_z`
+#   ("Vertical Plant Area Volume Density profile from ground (z=0) to canopy top with a vertical step size of
+#   dZ", m² m⁻³), `dz`, `l2b_quality_flag_rel3`, `l2_algrunflag`, plus the same location, time and quality
+#   fields.
 #
-# Whether a beam is a full-power or a coverage beam is read from the beam group's own `description` attribute.
-# Footprints outside the box are dropped. Outputs: one parquet file per product, one row per footprint, plus the
-# list of granules used.
+# Fields are found by name inside each beam group (root first). Whether a beam is a full-power or a coverage beam
+# is read from the beam group's `description` attribute. Outputs: one parquet file per product, one row per
+# footprint, plus the list of granules used.
 
 # %%
-import earthaccess
+import shutil
+
 import h5py
 import numpy as np
 import pandas as pd
+from harmony import BBox, Client, Collection, Request
+
+GEDI_COLLECTIONS = {"GEDI02_A": "C3974616071-LPCLOUD", "GEDI02_B": "C3974616135-LPCLOUD"}  # V003 on LP DAAC
+GEDI_DOI = {"GEDI02_A": "10.5067/GEDI/GEDI02_A.003", "GEDI02_B": "10.5067/GEDI/GEDI02_B.003"}
 
 
 def find(group: h5py.Group, name: str) -> h5py.Dataset:
-    """Dataset ``name`` directly in ``group`` or in one of its subgroups."""
+    """Dataset ``name`` directly in ``group``, else in one of its subgroups."""
     if name in group and isinstance(group[name], h5py.Dataset):
         return group[name]
     hits = []
@@ -175,55 +192,88 @@ def beam_type(b: h5py.Group) -> str:
     return d.decode() if isinstance(d, bytes) else str(d)
 
 
-def read_l2a(b: h5py.Group, idx: np.ndarray) -> dict:
-    rh = find(b, "rh")[idx.min():idx.max() + 1][idx - idx.min()]
-    return {"rh98": rh[:, 98], "rh100": rh[:, 100], "quality_flag": find(b, "quality_flag")[idx]}
+def read_l2a(b: h5py.Group) -> dict:
+    rh = find(b, "rh")[:]
+    return {"rh98": rh[:, 98], "rh100": rh[:, 100], "l2a_quality_flag_rel3": find(b, "l2a_quality_flag_rel3")[:]}
 
 
-def read_l2b(b: h5py.Group, idx: np.ndarray) -> dict:
-    pavd = find(b, "pavd_z")[idx.min():idx.max() + 1][idx - idx.min()]
-    cols = {"cover": find(b, "cover")[idx], "fhd_normal": find(b, "fhd_normal")[idx],
-            "l2b_quality_flag": find(b, "l2b_quality_flag")[idx], "algorithmrun_flag": find(b, "algorithmrun_flag")[idx],
+def read_l2b(b: h5py.Group) -> dict:
+    pavd = find(b, "pavd_z")[:]
+    cols = {"cover": find(b, "cover")[:], "fhd_normal": find(b, "fhd_normal")[:],
+            "l2b_quality_flag_rel3": find(b, "l2b_quality_flag_rel3")[:], "l2_algrunflag": find(b, "l2_algrunflag")[:],
             "dz": float(np.ravel(find(b, "dz")[()])[0])}
     cols.update({f"pavd_{k:02d}": pavd[:, k] for k in range(pavd.shape[1])})
     return cols
 
 
-def stream(short_name: str, reader) -> tuple[pd.DataFrame, list[str]]:
-    granules = earthaccess.search_data(short_name=short_name, version="002", bounding_box=BBOX,
-                                       temporal=(GEDI_START, GEDI_END))
-    print(f"{len(granules)} {short_name} granules intersect the box")
-    frames, used = [], []
-    for g, fobj in zip(granules, earthaccess.open(granules)):
-        with h5py.File(fobj, "r") as h5:
-            for beam in [k for k in h5 if k.startswith("BEAM")]:
-                b = h5[beam]
-                lat, lon = find(b, "lat_lowestmode")[:], find(b, "lon_lowestmode")[:]
-                inside = (lon >= BBOX[0]) & (lon <= BBOX[2]) & (lat >= BBOX[1]) & (lat <= BBOX[3])
-                if not inside.any():
-                    continue
-                idx = np.flatnonzero(inside)
-                frames.append(pd.DataFrame({
-                    "shot_number": find(b, "shot_number")[idx], "beam": beam, "beam_type": beam_type(b),
-                    "lon": lon[idx], "lat": lat[idx], "delta_time": find(b, "delta_time")[idx],
-                    "degrade_flag": find(b, "degrade_flag")[idx], "sensitivity": find(b, "sensitivity")[idx],
-                    "solar_elevation": find(b, "solar_elevation")[idx], **reader(b, idx)}))
-                used.append(g["meta"]["native-id"])
-    df = pd.concat(frames, ignore_index=True)
+def footprints(path: Path, reader) -> pd.DataFrame:
+    frames = []
+    with h5py.File(path, "r") as h5:
+        for beam in [k for k in h5 if k.startswith("BEAM")]:
+            b = h5[beam]
+            lat, lon = find(b, "lat_lowestmode")[:], find(b, "lon_lowestmode")[:]
+            if lat.size == 0:
+                continue
+            frames.append(pd.DataFrame({
+                "shot_number": find(b, "shot_number")[:], "beam": beam, "beam_type": beam_type(b),
+                "lon": lon, "lat": lat, "delta_time": find(b, "delta_time")[:],
+                "degrade_flag": find(b, "degrade_flag")[:], "sensitivity": find(b, "sensitivity")[:],
+                "solar_elevation": find(b, "solar_elevation")[:], **reader(b)}))
+    df = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+    if len(df):  # the subsetter keeps whole along-track chunks: keep the box only
+        df = df[(df.lon >= BBOX[0]) & (df.lon <= BBOX[2]) & (df.lat >= BBOX[1]) & (df.lat <= BBOX[3])]
+    return df
+
+
+def harmony_product(client: Client, short_name: str, reader) -> tuple[pd.DataFrame, list[str]]:
+    """Submit one Harmony job per month (processed in parallel on NASA's side), then fetch, read and delete each."""
+    parts, tmp = RAW / "gedi_parts" / short_name, RAW / "gedi_tmp" / short_name
+    parts.mkdir(parents=True, exist_ok=True)
+    tmp.mkdir(parents=True, exist_ok=True)
+    jobs_file = parts / "harmony_jobs.json"
+    jobs = json.loads(jobs_file.read_text()) if jobs_file.exists() else {}
+    months = pd.date_range(GEDI_START, GEDI_END, freq="MS").union([pd.Timestamp(GEDI_START), pd.Timestamp(GEDI_END)])
+    for start, stop in zip(months[:-1], months[1:]):
+        key = f"{start:%Y-%m}"
+        if key in jobs or (parts / f"{key}.done").exists():
+            continue
+        req = Request(collection=Collection(id=GEDI_COLLECTIONS[short_name]), spatial=BBox(*BBOX),
+                      temporal={"start": start.to_pydatetime(), "stop": stop.to_pydatetime()})
+        try:
+            jobs[key] = client.submit(req)
+        except Exception as e:  # e.g. a month inside GEDI's 2023-2024 gap: nothing to process
+            (parts / f"{key}.done").write_text(f"not submitted: {str(e)[:200]}\n")
+        jobs_file.write_text(json.dumps(jobs, indent=1))
+    print(f"{short_name}: {len(jobs)} Harmony jobs")
+    for key, job in sorted(jobs.items()):
+        done = parts / f"{key}.done"
+        if done.exists():
+            continue
+        client.wait_for_processing(job, show_progress=False)
+        n = 0
+        for fut in client.download_all(job, directory=str(tmp), overwrite=True):
+            path = Path(fut.result())
+            footprints(path, reader).to_parquet(parts / f"{path.stem}.parquet")
+            path.unlink()
+            n += 1
+        done.write_text(f"{n} granules, Harmony job {job}\n")
+        print(f"  {short_name} {key}: {n} granules")
+    shutil.rmtree(tmp, ignore_errors=True)
+    files = sorted(parts.glob("*.parquet"))
+    dfs = [pd.read_parquet(f) for f in files]
+    used = [f.stem for f, d in zip(files, dfs) if len(d)]
+    df = pd.concat([d for d in dfs if len(d)], ignore_index=True)
     df["time"] = pd.Timestamp("2018-01-01", tz="UTC") + pd.to_timedelta(df["delta_time"], unit="s")
-    return df, sorted(set(used))
+    return df, used
 
 
 GEDI = {"GEDI02_A": (RAW / "gedi_l2a_beni.parquet", read_l2a), "GEDI02_B": (RAW / "gedi_l2b_beni.parquet", read_l2b)}
-if not all(path.exists() for path, _ in GEDI.values()):
-    strategy = "environment" if os.environ.get("EARTHDATA_USERNAME") else "netrc"
-    if not earthaccess.login(strategy=strategy):
-        sys.exit("NASA Earthdata login failed: set EARTHDATA_USERNAME/EARTHDATA_PASSWORD or ~/.netrc.")
+client = Client()  # NASA Earthdata login from EARTHDATA_USERNAME/EARTHDATA_PASSWORD or ~/.netrc
 gedi_granules = {}
 for short_name, (path, reader) in GEDI.items():
     granule_list = RAW / f"{short_name.lower()}_granules.json"
     if not path.exists():
-        df, used = stream(short_name, reader)
+        df, used = harmony_product(client, short_name, reader)
         df.to_parquet(path)
         granule_list.write_text(json.dumps(used, indent=1))
     df = pd.read_parquet(path)
@@ -290,13 +340,13 @@ SOURCES = {
             "license": "ESA/NASA MAAP open data policy: free and open; free MAAP registration needed",
             "catalogue": f"{MAAP_CATALOG}/collections/BiomassLevel2a"},
         "gedi_l2a": {
-            "name": "GEDI L2A Elevation and Height Metrics Data Global Footprint Level V002",
-            "doi": "10.5067/GEDI/GEDI02_A.002", "license": "NASA Earthdata: no restrictions on reuse",
+            "name": "GEDI L2A Elevation and Height Metrics Data Global Footprint Level V003",
+            "doi": GEDI_DOI["GEDI02_A"], "access": "NASA Harmony trajectory subsetter (bounding box)", "license": "NASA Earthdata: no restrictions on reuse",
             "temporal": [GEDI_START, GEDI_END], "granules": gedi_granules["GEDI02_A"],
             "file": GEDI["GEDI02_A"][0].name, "sha256": sha256(GEDI["GEDI02_A"][0])},
         "gedi_l2b": {
-            "name": "GEDI L2B Canopy Cover and Vertical Profile Metrics Data Global Footprint Level V002",
-            "doi": "10.5067/GEDI/GEDI02_B.002", "license": "NASA Earthdata: no restrictions on reuse",
+            "name": "GEDI L2B Canopy Cover and Vertical Profile Metrics Data Global Footprint Level V003",
+            "doi": GEDI_DOI["GEDI02_B"], "access": "NASA Harmony trajectory subsetter (bounding box)", "license": "NASA Earthdata: no restrictions on reuse",
             "temporal": [GEDI_START, GEDI_END], "granules": gedi_granules["GEDI02_B"],
             "file": GEDI["GEDI02_B"][0].name, "sha256": sha256(GEDI["GEDI02_B"][0])},
         "worldcover": {

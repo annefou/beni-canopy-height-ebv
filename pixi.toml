@@ -62,6 +62,7 @@ netcdf4 = "*"                # NetCDF intermediates (DOMAIN.md: preferred over .
 [pypi-dependencies]
 # healpix-connector v0.1.0 (+ __version__ fix), pinned by commit; Zenodo doi:10.5281/zenodo.22904851
 healpix-connector = { git = "https://github.com/annefou/healpix-connector", rev = "02eb52b961f28ca139d992b938809030486ef643" }
+harmony-py = "*"            # NASA Harmony: server-side GEDI subsetting (box + variables)
 # pygbif = "*"               # GBIF occurrences
 # polytope-client = "*"      # Destination Earth Climate DT
 # earthkit-data = "*"

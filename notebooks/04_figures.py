@@ -93,7 +93,7 @@ ax.set_xticks([1, 2, 3], order)
 ax.set(ylabel="|BIOMASS − GEDI| (m)",
        title=f"Disagreement by BIOMASS bias index (Spearman {S['bias_index_vs_disagreement']['spearman']:.2f})")
 fig.suptitle("EBV Ecosystem Vertical Profile, forest, Beni lowlands, WGS84 HEALPix depth 11 (~3.2 km). Data: ESA BIOMASS "
-             "L2A FP_FH (ESA MAAP); GEDI L2A/L2B V002; ESA WorldCover 2021; ESA Fire_cci v1.1", fontsize=9)
+             "L2A FP_FH (ESA MAAP); GEDI L2A/L2B V003; ESA WorldCover 2021; ESA Fire_cci v1.1", fontsize=9)
 fig.savefig(FIGURES / "main_result.png", dpi=150)
 fig.savefig(FIGURES / "main_result.pdf")
 plt.show()

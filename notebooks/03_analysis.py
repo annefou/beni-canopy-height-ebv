@@ -142,7 +142,7 @@ assert np.array_equal(prof.cell_ids.values, F.index.to_numpy())
 
 BIOMASS_TIME = "BIOMASS: " + ", ".join(sorted({p["start"][:10] for p in json.loads(ds.attrs["biomass_products"])
                                               if not p["excluded"]}))
-GEDI_TIME = "GEDI: 2019-04-04 to 2025-07-10 (all kept footprints)"
+GEDI_TIME = f"GEDI V003: {ds.attrs['gedi_first_shot']} to {ds.attrs['gedi_last_shot']} (kept footprints)"
 
 
 def v(col: str, attrs: dict, dtype: str = "float32"):

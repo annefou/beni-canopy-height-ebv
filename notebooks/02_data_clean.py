@@ -32,11 +32,11 @@
 # **"Canopy height" is not one quantity.** The two height sources measure different things, quoted from their
 # own documentation:
 #
-# | | BIOMASS L2A `FP_FH__L2A` | GEDI L2A V002 |
+# | | BIOMASS L2A `FP_FH__L2A` | GEDI L2A V003 |
 # |---|---|---|
-# | Definition | "forest upper canopy height (H100 Standard)" (Forest Height ATBD v2.2.0, §3.5.1); "Top Canopy Height (TCH)" (Product Format Specification v3.4.0, §4.2) | "Relative height metrics at 1 % interval" (L2A data dictionary); RH100 = `elev_highestreturn − elev_lowestmode` (User Guide V2.1) |
+# | Definition | "forest upper canopy height (H100 Standard)" (Forest Height ATBD v2.2.0, §3.5.1); "Top Canopy Height (TCH)" (Product Format Specification v3.4.0, §4.2) | "Relative height metrics at 1 % interval" (L2A V3 data dictionary); RH100 = `elev_highestreturn − elev_lowestmode` (L2 User Guide V2.1) |
 # | Support | 200 m pixel, radar (P-band PolInSAR inversion) | ~25 m footprint, lidar waveform |
-# | Quality | "a percentage bias value for each of the Forest Height image pixel" (PFS §4.2): **lower is better** | `quality_flag` = 1, `degrade_flag` = 0, `sensitivity` (max. canopy cover penetrated) |
+# | Quality | "a percentage bias value for each of the Forest Height image pixel" (PFS §4.2): **lower is better** | `l2a_quality_flag_rel3` = 1 (L2 User Guide V3: includes `sensitivity` > 0.98 in tropical forest), `degrade_flag` = 0 |
 #
 # Both fit the CF standard name `canopy_height` ("the vertical distance above the surface" of "the outer surfaces
 # of the vegetation", CF table v95), which is broad enough to hide the difference. So each variable below carries
@@ -162,10 +162,12 @@ print(f"{(tree >= FOREST_MIN).mean()*100:.0f} % of cells are at least {FOREST_MI
 # %% [markdown]
 # ## GEDI footprints per cell
 #
-# Common selection for both products: `degrade_flag` = 0, full-power beams, `sensitivity` ≥ 0.95, footprint in a
-# forest block. The GEDI user guide recommends power beams in dense forest and says there "the user may benefit
-# from selecting a higher threshold" than the 0.9 built into the quality flags; 0.95 is our choice and is
-# recorded. Product flags: L2A `quality_flag` = 1; L2B `l2b_quality_flag` = 1 and `algorithmrun_flag` = 1.
+# GEDI Version 3. Common selection for both products: `degrade_flag` = 0, full-power beams (the GEDI L2 User
+# Guide V3: "GEDI power beams should be used" in dense forest), footprint in a forest block. Product flags, as
+# defined in the User Guide V3 pseudo-code: L2A `l2a_quality_flag_rel3` = 1, which already requires
+# `sensitivity` > 0.98 over tropical forest (0.95 elsewhere on land); L2B `l2b_quality_flag_rel3` = 1 (adds land,
+# < 50 % urban, canopy < 150 m) and `l2_algrunflag` = 1. Note that the V3 root `quality_flag` only means "likely
+# invalid waveform" and is not used.
 # Night shots (`solar_elevation` < 0) are kept and flagged; `03` checks that the height result holds on night
 # shots alone.
 #
@@ -177,8 +179,7 @@ print(f"{(tree >= FOREST_MIN).mean()*100:.0f} % of cells are at least {FOREST_MI
 
 # %%
 def select(df: pd.DataFrame, flags: dict) -> pd.DataFrame:
-    keep = ((df["degrade_flag"] == 0) & (df["sensitivity"] >= 0.95)
-            & df["beam_type"].str.contains("full power", case=False))
+    keep = (df["degrade_flag"] == 0) & df["beam_type"].str.contains("full power", case=False)
     for col, val in flags.items():
         keep &= df[col] == val
     out = df[keep].copy()
@@ -192,7 +193,7 @@ def select(df: pd.DataFrame, flags: dict) -> pd.DataFrame:
 
 q = lambda x, k: np.nanpercentile(x, k)
 print("GEDI L2A:")
-ga = select(pd.read_parquet(RAW / "gedi_l2a_beni.parquet"), {"quality_flag": 1})
+ga = select(pd.read_parquet(RAW / "gedi_l2a_beni.parquet"), {"l2a_quality_flag_rel3": 1})
 gg = ga.groupby("cell_id")
 ged = pd.DataFrame({
     "rh98_median": gg["rh98"].median(),
@@ -202,7 +203,7 @@ ged = pd.DataFrame({
 })
 
 print("GEDI L2B:")
-gb = select(pd.read_parquet(RAW / "gedi_l2b_beni.parquet"), {"l2b_quality_flag": 1, "algorithmrun_flag": 1})
+gb = select(pd.read_parquet(RAW / "gedi_l2b_beni.parquet"), {"l2b_quality_flag_rel3": 1, "l2_algrunflag": 1})
 DZ = float(gb["dz"].iloc[0])
 assert np.allclose(gb["dz"], DZ), "GEDI L2B profiles with different vertical steps"
 pcols = sorted(c for c in gb if c.startswith("pavd_"))
@@ -258,16 +259,16 @@ FH_DEF = ("BIOMASS L2A forest height: 'forest upper canopy height (H100 Standard
 BIAS_DEF = ("BIOMASS L2A forest height quality: 'a percentage bias value for each of the Forest Height image pixel, "
             "indicating the inversion performance' (Format Specification v3.4.0, sec. 4.2); computed as "
             "|k_hb - k_h| / k_h * 100 (ATBD eq. 3.22). Lower is better.")
-RH_DEF = ("GEDI L2A rh: 'Relative height metrics at 1 % interval' (GEDI L2A data dictionary, product P003 v2); "
+RH_DEF = ("GEDI L2A V003 rh: 'Relative height metrics at 1 % interval' (GEDI L2A V3 product data dictionary); "
           "RH100 = elev_highestreturn - elev_lowestmode (GEDI L2 User Guide V2.1). rh98 is the height above the "
           "lowest mode at which 98 % of the returned waveform energy is reached.")
 COVER_DEF = ("GEDI L2B cover: 'Total canopy cover, defined as the percent of the ground covered by the vertical "
-             "projection of canopy material' (GEDI L2B data dictionary P003 v2); valid range 0-1, so stored as a "
+             "projection of canopy material' (GEDI L2B V3 product data dictionary); valid range 0-1, so stored as a "
              "fraction despite the word 'percent'.")
 FHD_DEF = ("GEDI L2B fhd_normal: 'Foliage height diversity index calculated by vertical foliage profile normalized "
-           "by total plant area index' (GEDI L2B data dictionary P003 v2).")
-PAVD_DEF = ("GEDI L2B pavd_z: 'Vertical Plant Area Volume Density profile with a vertical step size of dZ', m2 m-3 "
-            "(GEDI L2B data dictionary P003 v2).")
+           "by total plant area index' (GEDI L2B V3 product data dictionary).")
+PAVD_DEF = ("GEDI L2B V003 pavd_z: 'Vertical Plant Area Volume Density profile from ground (z=0) to canopy top with "
+            "a vertical step size of dZ', m2 m-3 (GEDI L2B V3 product data dictionary).")
 NO_STD = "No CF standard name exists for this quantity (CF standard name table v95)."
 
 
@@ -299,9 +300,9 @@ ds = xr.Dataset(
         "gedi_rh98": var("rh98_median", {
             "standard_name": "canopy_height", "units": "m", "long_name": "GEDI relative height RH98, cell median",
             "definition": RH_DEF, "support": "~25 m lidar footprints inside the cell",
-            "statistic": "median over kept footprints (quality_flag=1, degrade_flag=0, full-power beams, sensitivity>=0.95)",
+            "statistic": "median over kept footprints (l2a_quality_flag_rel3=1, degrade_flag=0, full-power beams, forest block)",
             "cell_methods": "area: median", "ancillary_variables": "gedi_n_shots gedi_rh98_iqr",
-            "source": "GEDI L2A V002 doi:10.5067/GEDI/GEDI02_A.002"}),
+            "source": "GEDI L2A V003 doi:10.5067/GEDI/GEDI02_A.003, subset by NASA Harmony"}),
         "gedi_rh98_iqr": var("rh98_iqr", {"units": "m", "long_name": "interquartile range of GEDI RH98 in the cell"}),
         "gedi_rh98_night": var("rh98_median_night", {"units": "m", "standard_name": "canopy_height",
                                                      "long_name": "GEDI RH98, cell median of night shots only",
@@ -311,7 +312,7 @@ ds = xr.Dataset(
         "gedi_cover": var("cover_median", {
             "units": "1", "long_name": "GEDI L2B total canopy cover, cell median", "definition": COVER_DEF,
             "support": "~25 m lidar footprints in forest blocks inside the cell", "statistic": "median over kept footprints",
-            "comment": NO_STD, "source": "GEDI L2B V002 doi:10.5067/GEDI/GEDI02_B.002"}),
+            "comment": NO_STD, "source": "GEDI L2B V003 doi:10.5067/GEDI/GEDI02_B.003, subset by NASA Harmony"}),
         "gedi_fhd_normal": var("fhd_median", {
             "units": "1", "long_name": "GEDI L2B foliage height diversity, cell median", "definition": FHD_DEF,
             "statistic": "median over kept footprints", "comment": NO_STD}),
@@ -340,7 +341,8 @@ ds = xr.Dataset(
 )
 ds.attrs.update(dggs_attrs(DEPTH))
 ds.attrs.update({"Conventions": "CF-1.8", "title": "Beni lowlands: inputs for the EBV Ecosystem Vertical Profile on HEALPix",
-                 "region_bbox_lonlat": list(BBOX), "forest_min_tree_cover_fraction": FOREST_MIN, "producer": f"healpix-connector {healpix_connector.__version__}",
+                 "region_bbox_lonlat": list(BBOX), "forest_min_tree_cover_fraction": FOREST_MIN,
+                 "gedi_first_shot": f"{min(ga.time.min(), gb.time.min()):%Y-%m-%d}", "gedi_last_shot": f"{max(ga.time.max(), gb.time.max()):%Y-%m-%d}", "producer": f"healpix-connector {healpix_connector.__version__}",
                  "biomass_products": products.to_json(orient="records")})
 STORE = CLEAN / "beni_canopy_height.zarr"
 ds.to_zarr(STORE, group=f"measurements/canopy_height/{DEPTH}", mode="w", zarr_format=3, consolidated=False)

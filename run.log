@@ -1,0 +1,49 @@
+nohup: ignoring input
+Assuming unrestricted shared filesystem usage.
+host: ccaf
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job              count
+-------------  -------
+data_download        1
+data_clean           1
+analysis             1
+figures              1
+all                  1
+total                5
+
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Oct  1 14:25:43 2026]
+localrule data_download:
+    output: data/raw/sources.json, data/raw/biomass_fh/items.json, data/raw/gedi_l2a_beni.parquet, data/raw/gedi_l2b_beni.parquet, data/raw/worldcover2021_treecover_fraction_100m.nc
+    log: results/logs/01_data_download.log
+    jobid: 4
+    reason: Missing output files: data/raw/sources.json, data/raw/worldcover2021_treecover_fraction_100m.nc, data/raw/gedi_l2b_beni.parquet, data/raw/biomass_fh/items.json, data/raw/gedi_l2a_beni.parquet
+    resources: tmpdir=/tmp
+Will exit after finishing currently running jobs (scheduler).
+Will exit after finishing currently running jobs (scheduler).
+Will exit after finishing currently running jobs (scheduler).
+RuleException:
+CalledProcessError in file "/opt/vth/OpenAIRE_Alien_AI_Hackathon/biodiversity/beni-canopy-height-ebv/Snakefile", line 33:
+Command 'set -euo pipefail;  cd notebooks && jupytext --to notebook --execute 01_data_download.py 2>&1 | tee ../results/logs/01_data_download.log' died with <Signals.SIGTERM: 15>.
+[Thu Oct  1 15:17:23 2026]
+Error in rule data_download:
+    message: None
+    jobid: 4
+    output: data/raw/sources.json, data/raw/biomass_fh/items.json, data/raw/gedi_l2a_beni.parquet, data/raw/gedi_l2b_beni.parquet, data/raw/worldcover2021_treecover_fraction_100m.nc
+    log: results/logs/01_data_download.log (check log file(s) for error details)
+    shell:
+        cd notebooks && jupytext --to notebook --execute 01_data_download.py 2>&1 | tee ../results/logs/01_data_download.log
+        (command exited with non-zero exit code)
+Removing output files of failed job data_download since they might be corrupted:
+data/raw/biomass_fh/items.json
+Will exit after finishing currently running jobs (scheduler).
+Shutting down, this might take some time.
+Complete log(s): /opt/vth/OpenAIRE_Alien_AI_Hackathon/biodiversity/beni-canopy-height-ebv/.snakemake/log/2026-10-01T142543.765477.snakemake.log
+WorkflowError:
+At least one job did not complete successfully.
