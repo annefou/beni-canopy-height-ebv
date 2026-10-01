@@ -14,7 +14,16 @@
 # ---
 
 # %% [markdown]
-# # 02 — Three layers on one grid, each saying what it is
+# # 02 — All layers on one grid, each saying what it is
+#
+# **What we are producing.** A dataset for the GEO BON EBV *Ecosystem Vertical Profile* (class Ecosystem
+# Structure). EuropaBON D4.1 (2022) specifies it as the "Percentage of the relative vertical distribution of volume
+# and biomass in the ecosystem focus group". Valbuena et al. 2020 (Trends Ecol. Evol., doi:10.1016/j.tree.2020.03.006)
+# summarise vertical structure from 3D sources by three ecosystem morphological traits: *ecosystem height*
+# ("Average height of the highest ecosystem structural elements … top of canopy height in forests"), *ecosystem
+# cover* ("Percentage of a fixed area covered by the vertical projection" of the structural elements) and
+# *structural complexity* ("Variability in height and/or cover … Standard deviation and coefficient of variation
+# are common measures"). This step prepares all four: the three traits and the relative profile itself.
 #
 # All layers are put on **HEALPix NESTED on the WGS84 ellipsoid, depth 11** (cells of ~3.2 km) with
 # `healpix-connector` (GRID4EARTH). Depth 11 is the finest at which both 200 m BIOMASS pixels and 300 m Fire_cci
@@ -125,36 +134,88 @@ bio = pd.DataFrame({
     "fh_between_pass_std": g["fh"].std(ddof=0),
     "n_passes": g.size(),
 })
+bio["fh_within_cv"] = bio["fh_within_std"] / bio["fh"]  # structural complexity (Valbuena et al. 2020)
 print(f"{len(bio)} cells with BIOMASS forest height from {products['excluded'].eq(False).sum()} products")
+
+# %% [markdown]
+# ## Ecosystem focus group: forest
+#
+# The EBV is defined per ecosystem focus group. Here the group is forest: ESA WorldCover 2021 class 10, "Tree
+# cover". A cell belongs to the group when at least half of it is tree cover; a GEDI footprint belongs to it when
+# the 100 m block it falls in is at least half tree cover. Both thresholds are ours and are recorded.
+
+# %%
+FOREST_MIN = 0.5
+wc = xr.open_dataset(RAW / "worldcover2021_treecover_fraction_100m.nc")
+wres = float(abs(wc.lon[1] - wc.lon[0]))
+tc = bin_to_cells(wc.tree_cover_fraction.values.astype("float64"), wc.lon.values, wc.lat.values, DEPTH, wres)
+tree = pd.Series(tc.mean, index=pd.Index(tc.cell_ids, name="cell_id"), name="tree_cover_fraction")
+
+
+def in_forest(lon: np.ndarray, lat: np.ndarray) -> np.ndarray:
+    f = wc.tree_cover_fraction.sel(lon=xr.DataArray(lon), lat=xr.DataArray(lat), method="nearest").values
+    return f >= FOREST_MIN
+
+
+print(f"{(tree >= FOREST_MIN).mean()*100:.0f} % of cells are at least {FOREST_MIN:.0%} tree cover")
 
 # %% [markdown]
 # ## GEDI footprints per cell
 #
-# Shots kept: `quality_flag` = 1, `degrade_flag` = 0, full-power beams, `sensitivity` ≥ 0.95. The GEDI user guide
-# recommends power beams in dense forest and says that there "the user may benefit from selecting a higher
-# threshold" than the 0.9 built into `quality_flag`; 0.95 is our choice and is recorded. Night shots
-# (`solar_elevation` < 0) are kept and flagged; `03` checks that the result holds on night shots alone.
-# Per cell: the median RH98 (robust to the occasional cloud or noise return), its spread, and the shot count.
+# Common selection for both products: `degrade_flag` = 0, full-power beams, `sensitivity` ≥ 0.95, footprint in a
+# forest block. The GEDI user guide recommends power beams in dense forest and says there "the user may benefit
+# from selecting a higher threshold" than the 0.9 built into the quality flags; 0.95 is our choice and is
+# recorded. Product flags: L2A `quality_flag` = 1; L2B `l2b_quality_flag` = 1 and `algorithmrun_flag` = 1.
+# Night shots (`solar_elevation` < 0) are kept and flagged; `03` checks that the height result holds on night
+# shots alone.
+#
+# Per cell:
+# - **L2A:** median RH98 (a second, independent estimate of ecosystem height), its spread, the shot count.
+# - **L2B:** median `cover` (ecosystem cover), median `fhd_normal` (structural complexity), and the mean plant
+#   area volume density profile over the footprints, normalised to **percent per height bin**: the relative
+#   vertical distribution of plant-area volume. `pavd_z` values of −9999 (no data) are ignored.
 
 # %%
-gedi = pd.read_parquet(RAW / "gedi_l2a_beni.parquet")
-keep = ((gedi["quality_flag"] == 1) & (gedi["degrade_flag"] == 0) & (gedi["sensitivity"] >= 0.95)
-        & gedi["beam_type"].str.contains("full power", case=False))
-gs = gedi[keep].copy()
-gs["cell_id"] = nested.lonlat_to_healpix(gs["lon"].to_numpy(), gs["lat"].to_numpy(), np.uint8(DEPTH),
-                                         ellipsoid=ELLIPSOID).astype("uint64")
-gs["night"] = gs["solar_elevation"] < 0
+def select(df: pd.DataFrame, flags: dict) -> pd.DataFrame:
+    keep = ((df["degrade_flag"] == 0) & (df["sensitivity"] >= 0.95)
+            & df["beam_type"].str.contains("full power", case=False))
+    for col, val in flags.items():
+        keep &= df[col] == val
+    out = df[keep].copy()
+    out = out[in_forest(out["lon"].to_numpy(), out["lat"].to_numpy())]
+    out["cell_id"] = nested.lonlat_to_healpix(out["lon"].to_numpy(), out["lat"].to_numpy(), np.uint8(DEPTH),
+                                              ellipsoid=ELLIPSOID).astype("uint64")
+    out["night"] = out["solar_elevation"] < 0
+    print(f"  kept {len(out)} of {len(df)} footprints ({100*out['night'].mean():.0f} % at night)")
+    return out
+
+
 q = lambda x, k: np.nanpercentile(x, k)
-gg = gs.groupby("cell_id")
+print("GEDI L2A:")
+ga = select(pd.read_parquet(RAW / "gedi_l2a_beni.parquet"), {"quality_flag": 1})
+gg = ga.groupby("cell_id")
 ged = pd.DataFrame({
     "rh98_median": gg["rh98"].median(),
     "rh98_iqr": gg["rh98"].agg(lambda x: q(x, 75) - q(x, 25)),
-    "rh98_median_night": gs[gs["night"]].groupby("cell_id")["rh98"].median(),
-    "n_shots": gg.size(), "n_shots_night": gg["night"].sum(),
-    "first_shot": gg["time"].min(), "last_shot": gg["time"].max(),
+    "rh98_median_night": ga[ga["night"]].groupby("cell_id")["rh98"].median(),
+    "n_shots": gg.size(),
 })
-print(f"{keep.sum()} of {len(gedi)} footprints kept, in {len(ged)} cells "
-      f"({100*gs['night'].mean():.0f} % at night)")
+
+print("GEDI L2B:")
+gb = select(pd.read_parquet(RAW / "gedi_l2b_beni.parquet"), {"l2b_quality_flag": 1, "algorithmrun_flag": 1})
+DZ = float(gb["dz"].iloc[0])
+assert np.allclose(gb["dz"], DZ), "GEDI L2B profiles with different vertical steps"
+pcols = sorted(c for c in gb if c.startswith("pavd_"))
+gb[pcols] = gb[pcols].where(gb[pcols] > -9999)
+for c in ("cover", "fhd_normal"):
+    gb[c] = gb[c].where(gb[c] > -9999)
+bb = gb.groupby("cell_id")
+l2b = pd.DataFrame({"cover_median": bb["cover"].median(), "fhd_median": bb["fhd_normal"].median(),
+                    "n_shots_l2b": bb.size()})
+pavd_mean = bb[pcols].mean()
+total = pavd_mean.sum(axis=1)
+profile_pct = pavd_mean.div(total.where(total > 0), axis=0) * 100
+print(f"profile: {len(pcols)} bins of {DZ:g} m, in {profile_pct.notna().all(axis=1).sum()} cells")
 
 # %% [markdown]
 # ## Disturbance between the two: Fire_cci 2024
@@ -187,8 +248,9 @@ print(f"{(fire > 0.05).mean()*100:.0f} % of cells had more than 5 % of their bur
 # attributes plus `definition` (quoted, with its source document), `support` and `statistic`.
 
 # %%
-cells = np.array(sorted(set(bio.index) | set(ged.index)), dtype="uint64")
-T = pd.DataFrame(index=pd.Index(cells, name="cell_id")).join(bio).join(ged).join(fire)
+cells = np.array(sorted(set(bio.index) | set(ged.index) | set(l2b.index)), dtype="uint64")
+T = pd.DataFrame(index=pd.Index(cells, name="cell_id")).join(bio).join(ged).join(l2b).join(fire).join(tree)
+P = profile_pct.reindex(T.index).to_numpy("float32")
 
 FH_DEF = ("BIOMASS L2A forest height: 'forest upper canopy height (H100 Standard)' (BIOMASS Forest Height ATBD "
           "BIO-BPS-FH-ATBD-ARE-10343 v2.2.0, 2026-03-13, sec. 3.5.1); 'Top Canopy Height (TCH)' (BIOMASS Forest "
@@ -199,6 +261,13 @@ BIAS_DEF = ("BIOMASS L2A forest height quality: 'a percentage bias value for eac
 RH_DEF = ("GEDI L2A rh: 'Relative height metrics at 1 % interval' (GEDI L2A data dictionary, product P003 v2); "
           "RH100 = elev_highestreturn - elev_lowestmode (GEDI L2 User Guide V2.1). rh98 is the height above the "
           "lowest mode at which 98 % of the returned waveform energy is reached.")
+COVER_DEF = ("GEDI L2B cover: 'Total canopy cover, defined as the percent of the ground covered by the vertical "
+             "projection of canopy material' (GEDI L2B data dictionary P003 v2); valid range 0-1, so stored as a "
+             "fraction despite the word 'percent'.")
+FHD_DEF = ("GEDI L2B fhd_normal: 'Foliage height diversity index calculated by vertical foliage profile normalized "
+           "by total plant area index' (GEDI L2B data dictionary P003 v2).")
+PAVD_DEF = ("GEDI L2B pavd_z: 'Vertical Plant Area Volume Density profile with a vertical step size of dZ', m2 m-3 "
+            "(GEDI L2B data dictionary P003 v2).")
 NO_STD = "No CF standard name exists for this quantity (CF standard name table v95)."
 
 
@@ -218,7 +287,11 @@ ds = xr.Dataset(
             "units": "percent", "long_name": "BIOMASS forest-height inversion bias (quality index)",
             "definition": BIAS_DEF, "comment": NO_STD, "statistic": "same weighting as biomass_forest_height"}),
         "biomass_fh_within_cell_std": var("fh_within_std", {
-            "units": "m", "long_name": "spread of BIOMASS forest height within the cell (weighted over passes)"}),
+            "units": "m", "long_name": "standard deviation of BIOMASS forest height within the cell (weighted over passes)",
+            "comment": "structural complexity: variability in height (Valbuena et al. 2020)"}),
+        "biomass_fh_within_cell_cv": var("fh_within_cv", {
+            "units": "1", "long_name": "coefficient of variation of BIOMASS forest height within the cell",
+            "comment": "structural complexity: variability in height (Valbuena et al. 2020)"}),
         "biomass_fh_between_pass_std": var("fh_between_pass_std", {
             "units": "m", "long_name": "spread of cell-mean BIOMASS forest height across passes"}),
         "biomass_n_passes": var("n_passes", {"standard_name": "number_of_observations", "units": "1",
@@ -235,17 +308,39 @@ ds = xr.Dataset(
                                                      "definition": RH_DEF}),
         "gedi_n_shots": var("n_shots", {"standard_name": "number_of_observations", "units": "1",
                                         "long_name": "kept GEDI footprints in the cell"}),
+        "gedi_cover": var("cover_median", {
+            "units": "1", "long_name": "GEDI L2B total canopy cover, cell median", "definition": COVER_DEF,
+            "support": "~25 m lidar footprints in forest blocks inside the cell", "statistic": "median over kept footprints",
+            "comment": NO_STD, "source": "GEDI L2B V002 doi:10.5067/GEDI/GEDI02_B.002"}),
+        "gedi_fhd_normal": var("fhd_median", {
+            "units": "1", "long_name": "GEDI L2B foliage height diversity, cell median", "definition": FHD_DEF,
+            "statistic": "median over kept footprints", "comment": NO_STD}),
+        "gedi_n_shots_l2b": var("n_shots_l2b", {"standard_name": "number_of_observations", "units": "1",
+                                                "long_name": "kept GEDI L2B footprints in the cell"}),
+        "gedi_relative_vertical_profile": (("cells", "height_bin"), P, {
+            "units": "percent", "grid_mapping": "crs",
+            "long_name": "relative vertical distribution of plant area volume: percent of the cell's mean GEDI PAVD profile in each height bin",
+            "definition": PAVD_DEF, "statistic": "mean pavd_z over kept footprints, then normalised to sum to 100 over height bins",
+            "comment": "Plant-area volume only; the EBV specification also names biomass, which this variable does not carry."}),
+        "tree_cover_fraction": var("tree_cover_fraction", {
+            "units": "1", "long_name": "share of the cell classified 'Tree cover' (class 10) by ESA WorldCover 2021",
+            "source": "ESA WorldCover 10 m 2021 v200 doi:10.5281/zenodo.7254221",
+            "comment": f"ecosystem focus group 'forest': cells with tree_cover_fraction >= {FOREST_MIN}"}),
         "burned_share_2024": var("burned_share_2024", {
             "standard_name": "burned_area_fraction", "units": "1", "cell_methods": "area: mean time: maximum",
             "long_name": "share of observed, burnable 300 m pixels burned at least once in 2024",
             "source": "ESA Fire_cci SYN burned area pixel v1.1 doi:10.5285/d441079fc77f49fabeb41330612b252f"}),
         "crs": ((), np.int8(0), cf_grid_mapping_attrs(DEPTH)),
     },
-    coords={"cell_ids": ("cells", cells, {"standard_name": "healpix_index", "units": "1"})},
+    coords={"cell_ids": ("cells", cells, {"standard_name": "healpix_index", "units": "1"}),
+            "height_bin": ("height_bin", (np.arange(len(pcols)) + 0.5) * DZ,
+                           {"units": "m", "long_name": "centre of the height bin above ground", "bounds": "height_bin_bounds"}),
+            "height_bin_bounds": (("height_bin", "nv"), np.stack([np.arange(len(pcols)) * DZ,
+                                                                (np.arange(len(pcols)) + 1) * DZ], axis=1), {"units": "m"})},
 )
 ds.attrs.update(dggs_attrs(DEPTH))
-ds.attrs.update({"Conventions": "CF-1.8", "title": "Beni lowlands: BIOMASS and GEDI canopy heights on HEALPix",
-                 "region_bbox_lonlat": list(BBOX), "producer": f"healpix-connector {healpix_connector.__version__}",
+ds.attrs.update({"Conventions": "CF-1.8", "title": "Beni lowlands: inputs for the EBV Ecosystem Vertical Profile on HEALPix",
+                 "region_bbox_lonlat": list(BBOX), "forest_min_tree_cover_fraction": FOREST_MIN, "producer": f"healpix-connector {healpix_connector.__version__}",
                  "biomass_products": products.to_json(orient="records")})
 STORE = CLEAN / "beni_canopy_height.zarr"
 ds.to_zarr(STORE, group=f"measurements/canopy_height/{DEPTH}", mode="w", zarr_format=3, consolidated=False)

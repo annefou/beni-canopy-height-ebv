@@ -8,6 +8,17 @@
 
 **Semantics first.** BIOMASS "forest height" is an upper-canopy stand height (H100) from a 200 m radar inversion; GEDI RH98 is a lidar energy percentile over a 25 m footprint. Both fit the CF name `canopy_height`, but they are different quantities, so each variable here carries its definition quoted from its product documentation, and relating one to the other is a model, not an identity. The BIOMASS quality layer is a percentage bias (lower is better).
 
+**What the EBV asks for, and what this dataset carries.** EuropaBON D4.1 (2022) specifies *Ecosystem Vertical Profile* as the "Percentage of the relative vertical distribution of volume and biomass in the ecosystem focus group"; Valbuena et al. 2020 (doi:10.1016/j.tree.2020.03.006) summarise it by ecosystem height, ecosystem cover and structural complexity. Per forest cell (ESA WorldCover 2021 tree cover ≥ 50 %):
+
+| Component | Variable | Source |
+|---|---|---|
+| Ecosystem height | `ecosystem_height` (+ uncertainty); `ecosystem_height_gedi` | BIOMASS H100; GEDI L2A RH98 |
+| Ecosystem cover | `ecosystem_cover` | GEDI L2B `cover` |
+| Structural complexity | `structural_complexity_height_cv`; `structural_complexity_fhd` | BIOMASS within-cell CV; GEDI L2B foliage height diversity |
+| Relative vertical profile | `relative_vertical_profile` (percent per 5 m bin) | GEDI L2B plant area volume density |
+
+**Gaps, stated in the dataset:** the profile is of plant-area volume, not biomass; GEDI components exist only where footprints fall; one BIOMASS season so far; no in-situ heights for validation.
+
 This repository produces:
 
 - A reproducible computational pipeline (Snakefile + notebooks).

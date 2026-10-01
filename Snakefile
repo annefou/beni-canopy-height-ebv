@@ -25,6 +25,8 @@ rule data_download:
         f"{DATA}/raw/sources.json",
         f"{DATA}/raw/biomass_fh/items.json",
         f"{DATA}/raw/gedi_l2a_beni.parquet",
+        f"{DATA}/raw/gedi_l2b_beni.parquet",
+        f"{DATA}/raw/worldcover2021_treecover_fraction_100m.nc",
     log:
         f"{RESULTS}/logs/01_data_download.log",
     shell:
@@ -37,6 +39,8 @@ rule data_clean:
         f"{DATA}/raw/sources.json",
         f"{DATA}/raw/biomass_fh/items.json",
         f"{DATA}/raw/gedi_l2a_beni.parquet",
+        f"{DATA}/raw/gedi_l2b_beni.parquet",
+        f"{DATA}/raw/worldcover2021_treecover_fraction_100m.nc",
     output:
         directory(f"{DATA}/clean/beni_canopy_height.zarr"),
         f"{DATA}/clean/biomass_products.csv",
@@ -44,15 +48,15 @@ rule data_clean:
         f"cd {{NOTEBOOKS}} && jupytext --to notebook --execute 02_data_clean.py"
 
 
-# ---------- 03: Agreement, calibration model, EBV ----------
+# ---------- 03: Agreement of the two heights, EBV dataset (Ecosystem Vertical Profile) ----------
 rule analysis:
     input:
         f"{DATA}/clean/beni_canopy_height.zarr",
     output:
         f"{RESULTS}/summary.csv",
         f"{RESULTS}/summary.json",
-        f"{RESULTS}/calibration_cells.parquet",
-        directory(f"{RESULTS}/beni_canopy_height_ebv.zarr"),
+        f"{RESULTS}/comparison_cells.parquet",
+        directory(f"{RESULTS}/beni_ecosystem_vertical_profile.zarr"),
     shell:
         f"cd {{NOTEBOOKS}} && jupytext --to notebook --execute 03_analysis.py"
 
@@ -61,7 +65,7 @@ rule analysis:
 rule figures:
     input:
         f"{RESULTS}/summary.json",
-        f"{RESULTS}/beni_canopy_height_ebv.zarr",
+        f"{RESULTS}/beni_ecosystem_vertical_profile.zarr",
     output:
         f"{FIGURES}/main_result.png",
     shell:

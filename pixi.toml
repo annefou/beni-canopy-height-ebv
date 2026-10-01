@@ -55,7 +55,8 @@ rasterio = "*"               # BIOMASS / Fire_cci GeoTIFF windows (via healpix-c
 requests = "*"
 zarr = ">=3"                 # GRID4EARTH DGGS Zarr (v3)
 earthaccess = "*"            # NASA Earthdata search + streamed GEDI granules
-h5py = "*"                   # GEDI L2A HDF5
+h5py = "*"                   # GEDI L2A/L2B HDF5
+netcdf4 = "*"                # NetCDF intermediates (DOMAIN.md: preferred over .npz)
 
 # Pip-only deps go in [pypi-dependencies]. Conda-forge is preferred where available.
 [pypi-dependencies]

@@ -21,8 +21,10 @@
 #
 # | Dataset | Role | Access |
 # |---|---|---|
-# | ESA BIOMASS L2A forest height `FP_FH__L2A` (200 m), 2026 | Earth-observation estimate of canopy height | ESA MAAP, **credentials** |
-# | NASA GEDI L2A V002 relative-height metrics (25 m footprints) | reference heights for calibration | NASA Earthdata, **credentials** |
+# | ESA BIOMASS L2A forest height `FP_FH__L2A` (200 m), 2026 | ecosystem height, wall to wall | ESA MAAP, **credentials** |
+# | NASA GEDI L2A V002 relative-height metrics (25 m footprints) | independent ecosystem height, for validation | NASA Earthdata, **credentials** |
+# | NASA GEDI L2B V002 canopy cover, foliage height diversity, plant area volume density profile (25 m footprints) | ecosystem cover, structural complexity, relative vertical profile | NASA Earthdata, **credentials** |
+# | ESA WorldCover 2021 v200 (10 m) | ecosystem focus group: tree cover | public; aggregated here to a 100 m tree-cover fraction |
 # | ESA Fire_cci SYN burned area pixel v1.1, 2024 | mask of cells disturbed between GEDI and BIOMASS | streamed by window in `02` |
 #
 # **Credentials** come only from the environment, never from this repository, and are never printed
@@ -128,13 +130,21 @@ print(f"{len(bio_files)} BIOMASS files; processors: "
       f"{sorted({json.dumps(r['processor']) for r in bio_records})}")
 
 # %% [markdown]
-# ## GEDI L2A V002 footprints (NASA Earthdata)
+# ## GEDI L2A and L2B V002 footprints (NASA Earthdata)
 #
-# Granules are streamed, not downloaded whole: from each beam we read only the footprint location, time, the
-# relative-height metrics RH98 and RH100, and the quality fields named in the GEDI L2A user guide
-# (`quality_flag`, `degrade_flag`, `sensitivity`, `solar_elevation`). Whether a beam is a full-power or a
-# coverage beam is read from the beam group's own `description` attribute. Footprints outside the box are
-# dropped. Output: `gedi_l2a_beni.parquet`, one row per footprint, plus the list of granules used.
+# Granules are streamed, not downloaded whole. Only the fields used are read, by name, wherever they sit inside
+# the beam group (the data dictionaries list them without their group paths):
+#
+# - **L2A:** location, time, the relative-height metrics RH98 and RH100 (`rh`, "Relative height metrics at 1 %
+#   interval"), `quality_flag`, `degrade_flag`, `sensitivity`, `solar_elevation`.
+# - **L2B:** `cover` ("Total canopy cover, defined as the percent of the ground covered by the vertical projection
+#   of canopy material"; stored as a fraction 0–1), `fhd_normal` ("Foliage height diversity index"), `pavd_z`
+#   ("Vertical Plant Area Volume Density profile with a vertical step size of dZ", m² m⁻³), `dz`,
+#   `l2b_quality_flag`, `algorithmrun_flag`, plus the same location, time and quality fields.
+#
+# Whether a beam is a full-power or a coverage beam is read from the beam group's own `description` attribute.
+# Footprints outside the box are dropped. Outputs: one parquet file per product, one row per footprint, plus the
+# list of granules used.
 
 # %%
 import earthaccess
@@ -142,41 +152,127 @@ import h5py
 import numpy as np
 import pandas as pd
 
-GEDI_PARQUET = RAW / "gedi_l2a_beni.parquet"
-if not GEDI_PARQUET.exists():
-    strategy = "environment" if os.environ.get("EARTHDATA_USERNAME") else "netrc"
-    if not earthaccess.login(strategy=strategy):
-        sys.exit("NASA Earthdata login failed: set EARTHDATA_USERNAME/EARTHDATA_PASSWORD or ~/.netrc.")
-    granules = earthaccess.search_data(short_name="GEDI02_A", version="002", bounding_box=BBOX,
+
+def find(group: h5py.Group, name: str) -> h5py.Dataset:
+    """Dataset ``name`` directly in ``group`` or in one of its subgroups."""
+    if name in group and isinstance(group[name], h5py.Dataset):
+        return group[name]
+    hits = []
+    group.visititems(lambda path, obj: hits.append(obj) if isinstance(obj, h5py.Dataset)
+                     and path.split("/")[-1] == name else None)
+    if not hits:
+        raise KeyError(f"{name} not in {group.name}")
+    return hits[0]
+
+
+def beam_type(b: h5py.Group) -> str:
+    d = b.attrs.get("description", b"")
+    return d.decode() if isinstance(d, bytes) else str(d)
+
+
+def read_l2a(b: h5py.Group, idx: np.ndarray) -> dict:
+    rh = find(b, "rh")[idx.min():idx.max() + 1][idx - idx.min()]
+    return {"rh98": rh[:, 98], "rh100": rh[:, 100], "quality_flag": find(b, "quality_flag")[idx]}
+
+
+def read_l2b(b: h5py.Group, idx: np.ndarray) -> dict:
+    pavd = find(b, "pavd_z")[idx.min():idx.max() + 1][idx - idx.min()]
+    cols = {"cover": find(b, "cover")[idx], "fhd_normal": find(b, "fhd_normal")[idx],
+            "l2b_quality_flag": find(b, "l2b_quality_flag")[idx], "algorithmrun_flag": find(b, "algorithmrun_flag")[idx],
+            "dz": float(np.ravel(find(b, "dz")[()])[0])}
+    cols.update({f"pavd_{k:02d}": pavd[:, k] for k in range(pavd.shape[1])})
+    return cols
+
+
+def stream(short_name: str, reader) -> tuple[pd.DataFrame, list[str]]:
+    granules = earthaccess.search_data(short_name=short_name, version="002", bounding_box=BBOX,
                                        temporal=(GEDI_START, GEDI_END))
-    print(f"{len(granules)} GEDI L2A granules intersect the box")
+    print(f"{len(granules)} {short_name} granules intersect the box")
     frames, used = [], []
     for g, fobj in zip(granules, earthaccess.open(granules)):
         with h5py.File(fobj, "r") as h5:
             for beam in [k for k in h5 if k.startswith("BEAM")]:
                 b = h5[beam]
-                lat, lon = b["lat_lowestmode"][:], b["lon_lowestmode"][:]
+                lat, lon = find(b, "lat_lowestmode")[:], find(b, "lon_lowestmode")[:]
                 inside = (lon >= BBOX[0]) & (lon <= BBOX[2]) & (lat >= BBOX[1]) & (lat <= BBOX[3])
                 if not inside.any():
                     continue
                 idx = np.flatnonzero(inside)
-                rh = b["rh"][idx.min():idx.max() + 1][idx - idx.min()]
                 frames.append(pd.DataFrame({
-                    "shot_number": b["shot_number"][idx], "beam": beam,
-                    "beam_type": b.attrs["description"].decode() if isinstance(b.attrs["description"], bytes)
-                    else str(b.attrs["description"]),
-                    "lon": lon[idx], "lat": lat[idx], "delta_time": b["delta_time"][idx],
-                    "rh98": rh[:, 98], "rh100": rh[:, 100],
-                    "quality_flag": b["quality_flag"][idx], "degrade_flag": b["degrade_flag"][idx],
-                    "sensitivity": b["sensitivity"][idx], "solar_elevation": b["solar_elevation"][idx],
-                }))
+                    "shot_number": find(b, "shot_number")[idx], "beam": beam, "beam_type": beam_type(b),
+                    "lon": lon[idx], "lat": lat[idx], "delta_time": find(b, "delta_time")[idx],
+                    "degrade_flag": find(b, "degrade_flag")[idx], "sensitivity": find(b, "sensitivity")[idx],
+                    "solar_elevation": find(b, "solar_elevation")[idx], **reader(b, idx)}))
                 used.append(g["meta"]["native-id"])
-    gedi = pd.concat(frames, ignore_index=True)
-    gedi["time"] = pd.Timestamp("2018-01-01", tz="UTC") + pd.to_timedelta(gedi["delta_time"], unit="s")
-    gedi.to_parquet(GEDI_PARQUET)
-    (RAW / "gedi_granules.json").write_text(json.dumps(sorted(set(used)), indent=1))
-gedi = pd.read_parquet(GEDI_PARQUET)
-print(f"{len(gedi)} GEDI footprints in the box, {gedi['time'].min():%Y-%m} .. {gedi['time'].max():%Y-%m}")
+    df = pd.concat(frames, ignore_index=True)
+    df["time"] = pd.Timestamp("2018-01-01", tz="UTC") + pd.to_timedelta(df["delta_time"], unit="s")
+    return df, sorted(set(used))
+
+
+GEDI = {"GEDI02_A": (RAW / "gedi_l2a_beni.parquet", read_l2a), "GEDI02_B": (RAW / "gedi_l2b_beni.parquet", read_l2b)}
+if not all(path.exists() for path, _ in GEDI.values()):
+    strategy = "environment" if os.environ.get("EARTHDATA_USERNAME") else "netrc"
+    if not earthaccess.login(strategy=strategy):
+        sys.exit("NASA Earthdata login failed: set EARTHDATA_USERNAME/EARTHDATA_PASSWORD or ~/.netrc.")
+gedi_granules = {}
+for short_name, (path, reader) in GEDI.items():
+    granule_list = RAW / f"{short_name.lower()}_granules.json"
+    if not path.exists():
+        df, used = stream(short_name, reader)
+        df.to_parquet(path)
+        granule_list.write_text(json.dumps(used, indent=1))
+    df = pd.read_parquet(path)
+    gedi_granules[short_name] = granule_list.name
+    print(f"{short_name}: {len(df)} footprints in the box, {df['time'].min():%Y-%m} .. {df['time'].max():%Y-%m}")
+
+# %% [markdown]
+# ## Ecosystem focus group: tree cover from ESA WorldCover 2021
+#
+# The EBV is defined per ecosystem focus group; here the group is forest, taken as WorldCover class 10,
+# "Tree cover" (legend stored in the files themselves). The four 10 m tiles covering the box are read in strips
+# and reduced to the share of tree-cover pixels per 100 m block (10 × 10 pixels), written as one NetCDF file.
+# `02` uses it per cell and per GEDI footprint.
+
+# %%
+import rasterio
+import xarray as xr
+from rasterio.windows import from_bounds
+
+WC_URL = "https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/ESA_WorldCover_10m_2021_v200_{t}_Map.tif"
+WC_TILES = ["S15W069", "S15W066", "S18W069", "S18W066"]
+TREE, AGG = 10, 10  # WorldCover class "Tree cover"; 10 x 10 pixels of 10 m = 100 m
+WC_OUT = RAW / "worldcover2021_treecover_fraction_100m.nc"
+
+if not WC_OUT.exists():
+    res = 1 / 12000  # WorldCover pixel size in degrees
+    nx, ny = round((BBOX[2] - BBOX[0]) / res) // AGG, round((BBOX[3] - BBOX[1]) / res) // AGG
+    frac = np.full((ny, nx), np.nan, dtype="float32")
+    for tile in WC_TILES:
+        with rasterio.open("/vsicurl/" + WC_URL.format(t=tile)) as src:
+            b = src.bounds
+            box = (max(BBOX[0], b.left), max(BBOX[1], b.bottom), min(BBOX[2], b.right), min(BBOX[3], b.top))
+            if box[0] >= box[2] or box[1] >= box[3]:
+                continue
+            win = from_bounds(*box, src.transform).round_offsets().round_lengths()
+            col0 = round((box[0] - BBOX[0]) / res) // AGG
+            row0 = round((BBOX[3] - box[3]) / res) // AGG
+            for r in range(0, int(win.height), 1200):  # strips of 1200 rows (12 km)
+                h = min(1200, int(win.height) - r)
+                a = src.read(1, window=rasterio.windows.Window(win.col_off, win.row_off + r, win.width, h))
+                a = a[: h // AGG * AGG, : int(win.width) // AGG * AGG]
+                tree = (a == TREE).reshape(a.shape[0] // AGG, AGG, a.shape[1] // AGG, AGG).mean(axis=(1, 3))
+                valid = (a != 0).reshape(tree.shape[0], AGG, tree.shape[1], AGG).any(axis=(1, 3))
+                rr = row0 + r // AGG
+                frac[rr:rr + tree.shape[0], col0:col0 + tree.shape[1]] = np.where(valid, tree, np.nan)
+    lon = BBOX[0] + (np.arange(nx) + 0.5) * res * AGG
+    lat = BBOX[3] - (np.arange(ny) + 0.5) * res * AGG
+    xr.Dataset({"tree_cover_fraction": (("lat", "lon"), frac, {
+        "units": "1", "long_name": "share of 10 m pixels classified 'Tree cover' (class 10) in each 100 m block",
+        "source": "ESA WorldCover 10 m 2021 v200, doi:10.5281/zenodo.7254221"})},
+        coords={"lat": ("lat", lat, {"units": "degrees_north"}), "lon": ("lon", lon, {"units": "degrees_east"})},
+        attrs={"tiles": " ".join(WC_TILES), "aggregation": f"{AGG} x {AGG} pixels"}).to_netcdf(WC_OUT)
+wc = xr.open_dataset(WC_OUT)
+print(f"tree-cover fraction grid {dict(wc.sizes)}, mean {float(wc.tree_cover_fraction.mean()):.2f}")
 
 # %%
 SOURCES = {
@@ -191,8 +287,17 @@ SOURCES = {
         "gedi_l2a": {
             "name": "GEDI L2A Elevation and Height Metrics Data Global Footprint Level V002",
             "doi": "10.5067/GEDI/GEDI02_A.002", "license": "NASA Earthdata: no restrictions on reuse",
-            "temporal": [GEDI_START, GEDI_END], "granules": "gedi_granules.json",
-            "file": GEDI_PARQUET.name, "sha256": sha256(GEDI_PARQUET)},
+            "temporal": [GEDI_START, GEDI_END], "granules": gedi_granules["GEDI02_A"],
+            "file": GEDI["GEDI02_A"][0].name, "sha256": sha256(GEDI["GEDI02_A"][0])},
+        "gedi_l2b": {
+            "name": "GEDI L2B Canopy Cover and Vertical Profile Metrics Data Global Footprint Level V002",
+            "doi": "10.5067/GEDI/GEDI02_B.002", "license": "NASA Earthdata: no restrictions on reuse",
+            "temporal": [GEDI_START, GEDI_END], "granules": gedi_granules["GEDI02_B"],
+            "file": GEDI["GEDI02_B"][0].name, "sha256": sha256(GEDI["GEDI02_B"][0])},
+        "worldcover": {
+            "name": "ESA WorldCover 10 m 2021 v200", "doi": "10.5281/zenodo.7254221", "license": "CC-BY-4.0",
+            "tiles": [WC_URL.format(t=x) for x in WC_TILES],
+            "file": WC_OUT.name, "sha256": sha256(WC_OUT), "derived": "tree-cover fraction per 100 m block"},
         "fire_cci": {
             "name": "ESA Fire_cci SYN burned area pixel product v1.1, 2024",
             "doi": "10.5285/d441079fc77f49fabeb41330612b252f",
@@ -202,4 +307,4 @@ SOURCES = {
     "files": bio_files,
 }
 (RAW / "sources.json").write_text(json.dumps(SOURCES, indent=1))
-print(len(bio_files) + 1, "files recorded")
+print(len(bio_files) + 3, "files recorded")
