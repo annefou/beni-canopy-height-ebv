@@ -1,10 +1,14 @@
 # beni-canopy-height-ebv
 
-> **Priority list of biodiversity metrics to observe from space** — replication study.
+> **A canopy-height Essential Biodiversity Variable from ESA BIOMASS, calibrated against GEDI** — Beni lowlands, Bolivia.
 >
-> Reference paper: [10.1038/s41559-021-01451-x](https://doi.org/10.1038/s41559-021-01451-x)
+> Question-rooted study (PICO). Foundation reference: Skidmore et al. 2021, *Priority list of biodiversity metrics to observe from space*, [10.1038/s41559-021-01451-x](https://doi.org/10.1038/s41559-021-01451-x).
 
-This repository is a self-contained replication of the headline claim from the reference paper above. It produces:
+**Question.** In the forest cells of the Beni lowlands, how well does ESA BIOMASS L2A forest height (H100, 2026) agree with GEDI L2A RH98 (2019–2025), and does a calibration model turn it into a canopy-height EBV with stated per-cell uncertainty?
+
+**Semantics first.** BIOMASS "forest height" is an upper-canopy stand height (H100) from a 200 m radar inversion; GEDI RH98 is a lidar energy percentile over a 25 m footprint. Both fit the CF name `canopy_height`, but they are different quantities, so each variable here carries its definition quoted from its product documentation, and relating one to the other is a model, not an identity. The BIOMASS quality layer is a percentage bias (lower is better).
+
+This repository produces:
 
 - A reproducible computational pipeline (Snakefile + notebooks).
 - A FORRT-tagged nanopublication chain on the [Science Live platform](https://platform.sciencelive4all.org), documenting the claim, the replication design, and the outcome with full provenance.

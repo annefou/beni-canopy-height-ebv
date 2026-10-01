@@ -11,10 +11,10 @@
 [![RO-Crate](https://img.shields.io/badge/RO--Crate-1.2-orange)](ro-crate-metadata.json)
 [![Software Heritage](https://archive.softwareheritage.org/badge/origin/https://github.com/annefou/beni-canopy-height-ebv/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/annefou/beni-canopy-height-ebv)
 
-> **Priority list of biodiversity metrics to observe from space** — replication study.
-> Reference paper: [10.1038/s41559-021-01451-x](https://doi.org/10.1038/s41559-021-01451-x)
+> **A canopy-height Essential Biodiversity Variable from ESA BIOMASS, calibrated against GEDI** — Beni lowlands, Bolivia.
+> Question-rooted study; foundation reference: [10.1038/s41559-021-01451-x](https://doi.org/10.1038/s41559-021-01451-x) (Skidmore et al. 2021).
 
-This is a self-contained replication of the headline claim of the reference paper. It produces a reproducible computational pipeline, a Zenodo-archived release with a citable DOI, and a FORRT-tagged nanopublication chain on the [Science Live platform](https://platform.sciencelive4all.org).
+This is a self-contained study. Step 01 needs ESA MAAP and NASA Earthdata credentials in the environment (see `notebooks/01_data_download.py`). It produces a reproducible computational pipeline, a Zenodo-archived release with a citable DOI, and a FORRT-tagged nanopublication chain on the [Science Live platform](https://platform.sciencelive4all.org).
 
 ---
 

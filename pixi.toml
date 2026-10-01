@@ -49,8 +49,18 @@ snakemake = "*"
 # geopandas = "*"            # vector I/O
 # dask = "*"                 # out-of-core / parallel
 
+# --- this study ---
+healpix-geo = ">=0.4.1"      # HEALPix on the WGS84 ellipsoid (nested)
+rasterio = "*"               # BIOMASS / Fire_cci GeoTIFF windows (via healpix-connector)
+requests = "*"
+zarr = ">=3"                 # GRID4EARTH DGGS Zarr (v3)
+earthaccess = "*"            # NASA Earthdata search + streamed GEDI granules
+h5py = "*"                   # GEDI L2A HDF5
+
 # Pip-only deps go in [pypi-dependencies]. Conda-forge is preferred where available.
-# [pypi-dependencies]
+[pypi-dependencies]
+# healpix-connector v0.1.0 (+ __version__ fix), pinned by commit; Zenodo doi:10.5281/zenodo.22904851
+healpix-connector = { git = "https://github.com/annefou/healpix-connector", rev = "02eb52b961f28ca139d992b938809030486ef643" }
 # pygbif = "*"               # GBIF occurrences
 # polytope-client = "*"      # Destination Earth Climate DT
 # earthkit-data = "*"

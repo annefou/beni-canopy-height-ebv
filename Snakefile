@@ -1,9 +1,6 @@
-# Snakefile — orchestrates the replication pipeline end-to-end.
+# Snakefile — orchestrates the pipeline end-to-end; each rule executes one jupytext notebook.
 #
-# Replace the placeholder rules with your actual replication steps. The
-# canonical pattern is one rule per pipeline stage, and each rule wraps a
-# notebook executed via jupytext (so the notebook stays the source of truth
-# and the Snakefile just sequences them).
+# 01 needs credentials in the environment (ESA MAAP and NASA Earthdata): see notebooks/01_data_download.py.
 #
 # Usage:
 #   snakemake --cores 1                  # run everything
@@ -13,43 +10,49 @@ NOTEBOOKS = "notebooks"
 DATA = "data"
 RESULTS = "results"
 FIGURES = "figures"
+STORE = "measurements/canopy_height/11"
 
 
 rule all:
     input:
-        # Replace with your actual final artefacts:
         f"{FIGURES}/main_result.png",
         f"{RESULTS}/summary.csv",
 
 
-# ---------- 01: Data download ----------
-# Every replication MUST be self-contained: data is downloaded by the notebook,
-# never assumed to exist locally. See CLAUDE.md § Self-contained data.
+# ---------- 01: Data download (BIOMASS via ESA MAAP, GEDI via NASA Earthdata) ----------
 rule data_download:
     output:
-        f"{DATA}/raw/dataset.zip",
+        f"{DATA}/raw/sources.json",
+        f"{DATA}/raw/biomass_fh/items.json",
+        f"{DATA}/raw/gedi_l2a_beni.parquet",
     log:
         f"{RESULTS}/logs/01_data_download.log",
     shell:
         f"cd {{NOTEBOOKS}} && jupytext --to notebook --execute 01_data_download.py 2>&1 | tee ../{{log}}"
 
 
-# ---------- 02: Data clean ----------
+# ---------- 02: All layers on WGS84 HEALPix depth 11, self-describing ----------
 rule data_clean:
     input:
-        f"{DATA}/raw/dataset.zip",
+        f"{DATA}/raw/sources.json",
+        f"{DATA}/raw/biomass_fh/items.json",
+        f"{DATA}/raw/gedi_l2a_beni.parquet",
     output:
-        f"{DATA}/clean/dataset.parquet",
+        directory(f"{DATA}/clean/beni_canopy_height.zarr"),
+        f"{DATA}/clean/biomass_products.csv",
     shell:
         f"cd {{NOTEBOOKS}} && jupytext --to notebook --execute 02_data_clean.py"
 
 
-# ---------- 03: Analysis ----------
+# ---------- 03: Agreement, calibration model, EBV ----------
 rule analysis:
     input:
-        f"{DATA}/clean/dataset.parquet",
+        f"{DATA}/clean/beni_canopy_height.zarr",
     output:
         f"{RESULTS}/summary.csv",
+        f"{RESULTS}/summary.json",
+        f"{RESULTS}/calibration_cells.parquet",
+        directory(f"{RESULTS}/beni_canopy_height_ebv.zarr"),
     shell:
         f"cd {{NOTEBOOKS}} && jupytext --to notebook --execute 03_analysis.py"
 
@@ -57,7 +60,8 @@ rule analysis:
 # ---------- 04: Figures ----------
 rule figures:
     input:
-        f"{RESULTS}/summary.csv",
+        f"{RESULTS}/summary.json",
+        f"{RESULTS}/beni_canopy_height_ebv.zarr",
     output:
         f"{FIGURES}/main_result.png",
     shell:
