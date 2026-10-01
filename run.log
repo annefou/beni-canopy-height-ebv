@@ -1,4 +1,3 @@
-nohup: ignoring input
 Assuming unrestricted shared filesystem usage.
 host: ccaf
 Building DAG of jobs...
@@ -18,20 +17,291 @@ total                5
 Select jobs to execute...
 Execute 1 jobs...
 
-[Thu Oct  1 14:25:43 2026]
+[Thu Oct  1 15:31:43 2026]
 localrule data_download:
     output: data/raw/sources.json, data/raw/biomass_fh/items.json, data/raw/gedi_l2a_beni.parquet, data/raw/gedi_l2b_beni.parquet, data/raw/worldcover2021_treecover_fraction_100m.nc
     log: results/logs/01_data_download.log
     jobid: 4
-    reason: Missing output files: data/raw/sources.json, data/raw/worldcover2021_treecover_fraction_100m.nc, data/raw/gedi_l2b_beni.parquet, data/raw/biomass_fh/items.json, data/raw/gedi_l2a_beni.parquet
+    reason: Missing output files: data/raw/sources.json, data/raw/gedi_l2b_beni.parquet, data/raw/biomass_fh/items.json, data/raw/worldcover2021_treecover_fraction_100m.nc, data/raw/gedi_l2a_beni.parquet
     resources: tmpdir=/tmp
-Will exit after finishing currently running jobs (scheduler).
-Will exit after finishing currently running jobs (scheduler).
-Will exit after finishing currently running jobs (scheduler).
+[jupytext] Reading 01_data_download.py in format py
+[jupytext] Executing notebook with kernel python3
+Traceback (most recent call last):
+  File "/opt/vth/OpenAIRE_Alien_AI_Hackathon/biodiversity/beni-canopy-height-ebv/.pixi/envs/default/bin/jupytext", line 10, in <module>
+    sys.exit(jupytext())
+             ^^^^^^^^^^
+  File "/opt/vth/OpenAIRE_Alien_AI_Hackathon/biodiversity/beni-canopy-height-ebv/.pixi/envs/default/lib/python3.12/site-packages/jupytext/cli.py", line 500, in jupytext
+    exit_code += jupytext_single_file(nb_file, args, log, notary=notary)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/vth/OpenAIRE_Alien_AI_Hackathon/biodiversity/beni-canopy-height-ebv/.pixi/envs/default/lib/python3.12/site-packages/jupytext/cli.py", line 748, in jupytext_single_file
+    exec_proc.preprocess(notebook, resources=resources)
+  File "/opt/vth/OpenAIRE_Alien_AI_Hackathon/biodiversity/beni-canopy-height-ebv/.pixi/envs/default/lib/python3.12/site-packages/nbconvert/preprocessors/execute.py", line 103, in preprocess
+    self.preprocess_cell(cell, resources, index)
+  File "/opt/vth/OpenAIRE_Alien_AI_Hackathon/biodiversity/beni-canopy-height-ebv/.pixi/envs/default/lib/python3.12/site-packages/nbconvert/preprocessors/execute.py", line 124, in preprocess_cell
+    cell = self.execute_cell(cell, index, store_history=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/vth/OpenAIRE_Alien_AI_Hackathon/biodiversity/beni-canopy-height-ebv/.pixi/envs/default/lib/python3.12/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
+    return loop.run_until_complete(inner)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/vth/OpenAIRE_Alien_AI_Hackathon/biodiversity/beni-canopy-height-ebv/.pixi/envs/default/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/opt/vth/OpenAIRE_Alien_AI_Hackathon/biodiversity/beni-canopy-height-ebv/.pixi/envs/default/lib/python3.12/site-packages/nbclient/client.py", line 1062, in async_execute_cell
+    await self._check_raise_for_error(cell, cell_index, exec_reply)
+  File "/opt/vth/OpenAIRE_Alien_AI_Hackathon/biodiversity/beni-canopy-height-ebv/.pixi/envs/default/lib/python3.12/site-packages/nbclient/client.py", line 918, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+import shutil
+
+import h5py
+import numpy as np
+import pandas as pd
+from harmony import BBox, Client, Collection, Request
+
+GEDI_COLLECTIONS = {"GEDI02_A": "C3974616071-LPCLOUD", "GEDI02_B": "C3974616135-LPCLOUD"}  # V003 on LP DAAC
+GEDI_DOI = {"GEDI02_A": "10.5067/GEDI/GEDI02_A.003", "GEDI02_B": "10.5067/GEDI/GEDI02_B.003"}
+
+
+def find(group: h5py.Group, name: str) -> h5py.Dataset:
+    """Dataset ``name`` directly in ``group``, else in one of its subgroups."""
+    if name in group and isinstance(group[name], h5py.Dataset):
+        return group[name]
+    hits = []
+    group.visititems(lambda path, obj: hits.append(obj) if isinstance(obj, h5py.Dataset)
+                     and path.split("/")[-1] == name else None)
+    if not hits:
+        raise KeyError(f"{name} not in {group.name}")
+    return hits[0]
+
+
+def beam_type(b: h5py.Group) -> str:
+    d = b.attrs.get("description", b"")
+    return d.decode() if isinstance(d, bytes) else str(d)
+
+
+def read_l2a(b: h5py.Group) -> dict:
+    rh = find(b, "rh")[:]
+    return {"rh98": rh[:, 98], "rh100": rh[:, 100], "l2a_quality_flag_rel3": find(b, "l2a_quality_flag_rel3")[:]}
+
+
+def read_l2b(b: h5py.Group) -> dict:
+    pavd = find(b, "pavd_z")[:]
+    cols = {"cover": find(b, "cover")[:], "fhd_normal": find(b, "fhd_normal")[:],
+            "l2b_quality_flag_rel3": find(b, "l2b_quality_flag_rel3")[:], "l2_algrunflag": find(b, "l2_algrunflag")[:],
+            "dz": float(np.ravel(find(b, "dz")[()])[0])}
+    cols.update({f"pavd_{k:02d}": pavd[:, k] for k in range(pavd.shape[1])})
+    return cols
+
+
+def footprints(path: Path, reader) -> pd.DataFrame:
+    frames = []
+    with h5py.File(path, "r") as h5:
+        for beam in [k for k in h5 if k.startswith("BEAM")]:
+            b = h5[beam]
+            lat, lon = find(b, "lat_lowestmode")[:], find(b, "lon_lowestmode")[:]
+            if lat.size == 0:
+                continue
+            frames.append(pd.DataFrame({
+                "shot_number": find(b, "shot_number")[:], "beam": beam, "beam_type": beam_type(b),
+                "lon": lon, "lat": lat, "delta_time": find(b, "delta_time")[:],
+                "degrade_flag": find(b, "degrade_flag")[:], "sensitivity": find(b, "sensitivity")[:],
+                "solar_elevation": find(b, "solar_elevation")[:], **reader(b)}))
+    df = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+    if len(df):  # the subsetter keeps whole along-track chunks: keep the box only
+        df = df[(df.lon >= BBOX[0]) & (df.lon <= BBOX[2]) & (df.lat >= BBOX[1]) & (df.lat <= BBOX[3])]
+    return df
+
+
+def harmony_product(client: Client, short_name: str, reader) -> tuple[pd.DataFrame, list[str]]:
+    """Submit one Harmony job per month (processed in parallel on NASA's side), then fetch, read and delete each."""
+    parts, tmp = RAW / "gedi_parts" / short_name, RAW / "gedi_tmp" / short_name
+    parts.mkdir(parents=True, exist_ok=True)
+    tmp.mkdir(parents=True, exist_ok=True)
+    jobs_file = parts / "harmony_jobs.json"
+    jobs = json.loads(jobs_file.read_text()) if jobs_file.exists() else {}
+    months = pd.date_range(GEDI_START, GEDI_END, freq="MS").union([pd.Timestamp(GEDI_START), pd.Timestamp(GEDI_END)])
+    for start, stop in zip(months[:-1], months[1:]):
+        key = f"{start:%Y-%m}"
+        if key in jobs or (parts / f"{key}.done").exists():
+            continue
+        req = Request(collection=Collection(id=GEDI_COLLECTIONS[short_name]), spatial=BBox(*BBOX),
+                      temporal={"start": start.to_pydatetime(), "stop": stop.to_pydatetime()})
+        try:
+            jobs[key] = client.submit(req)
+        except Exception as e:  # e.g. a month inside GEDI's 2023-2024 gap: nothing to process
+            (parts / f"{key}.done").write_text(f"not submitted: {str(e)[:200]}\n")
+        jobs_file.write_text(json.dumps(jobs, indent=1))
+    print(f"{short_name}: {len(jobs)} Harmony jobs")
+    for key, job in sorted(jobs.items()):
+        done = parts / f"{key}.done"
+        if done.exists():
+            continue
+        client.wait_for_processing(job, show_progress=False)
+        n = 0
+        for fut in client.download_all(job, directory=str(tmp), overwrite=True):
+            path = Path(fut.result())
+            footprints(path, reader).to_parquet(parts / f"{path.stem}.parquet")
+            path.unlink()
+            n += 1
+        done.write_text(f"{n} granules, Harmony job {job}\n")
+        print(f"  {short_name} {key}: {n} granules")
+    shutil.rmtree(tmp, ignore_errors=True)
+    files = sorted(parts.glob("*.parquet"))
+    dfs = [pd.read_parquet(f) for f in files]
+    used = [f.stem for f, d in zip(files, dfs) if len(d)]
+    df = pd.concat([d for d in dfs if len(d)], ignore_index=True)
+    df["time"] = pd.Timestamp("2018-01-01", tz="UTC") + pd.to_timedelta(df["delta_time"], unit="s")
+    return df, used
+
+
+GEDI = {"GEDI02_A": (RAW / "gedi_l2a_beni.parquet", read_l2a), "GEDI02_B": (RAW / "gedi_l2b_beni.parquet", read_l2b)}
+client = Client()  # NASA Earthdata login from EARTHDATA_USERNAME/EARTHDATA_PASSWORD or ~/.netrc
+gedi_granules = {}
+for short_name, (path, reader) in GEDI.items():
+    granule_list = RAW / f"{short_name.lower()}_granules.json"
+    if not path.exists():
+        df, used = harmony_product(client, short_name, reader)
+        df.to_parquet(path)
+        granule_list.write_text(json.dumps(used, indent=1))
+    df = pd.read_parquet(path)
+    gedi_granules[short_name] = granule_list.name
+    print(f"{short_name}: {len(df)} footprints in the box, {df['time'].min():%Y-%m} .. {df['time'].max():%Y-%m}")
+------------------
+
+----- stdout -----
+GEDI02_A: 63 Harmony jobs
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844334_GEDI02_A_2019101121835_O01858_01_T02798_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844333_GEDI02_A_2019099013617_O01820_04_T04795_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844332_GEDI02_A_2019098131445_O01812_01_T04940_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844331_GEDI02_A_2019095032203_O01759_04_T04382_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844335_GEDI02_A_2019102004006_O01866_04_T05499_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844336_GEDI02_A_2019105103240_O01919_01_T04634_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844337_GEDI02_A_2019105225411_O01927_04_T04489_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844338_GEDI02_A_2019108093620_O01965_01_T05338_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844340_GEDI02_A_2019112201147_O02034_04_T01337_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844339_GEDI02_A_2019112075017_O02026_01_T00059_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844341_GEDI02_A_2019115065354_O02072_01_T00763_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844342_GEDI02_A_2019115191524_O02080_04_T00618_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844344_GEDI02_A_2019119172916_O02141_04_T02607_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844343_GEDI02_A_2019119050747_O02133_01_T04022_02_004_02_V003_subsetted.h5
+----- stdout -----
+  GEDI02_A 2019-04: 14 granules
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844352_GEDI02_A_2019122163249_O02187_04_T01888_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844355_GEDI02_A_2019140092036_O02462_04_T01995_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844354_GEDI02_A_2019133120341_O02355_04_T04994_02_004_03_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844353_GEDI02_A_2019132234213_O02347_01_T02293_02_004_03_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844356_GEDI02_A_2019146182025_O02561_01_T04068_02_004_03_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844359_GEDI02_A_2019151050144_O02630_04_T00725_02_004_03_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844357_GEDI02_A_2019147064236_O02569_04_T05346_02_004_03_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844358_GEDI02_A_2019150163933_O02622_01_T02446_02_004_03_V003_subsetted.h5
+----- stdout -----
+  GEDI02_A 2019-05: 8 granules
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844361_GEDI02_A_2019157140611_O02729_01_T05032_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844362_GEDI02_A_2019158022821_O02737_04_T02041_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844363_GEDI02_A_2019161122513_O02790_01_T03257_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844364_GEDI02_A_2019162004722_O02798_04_T00266_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844367_GEDI02_A_2019172203242_O02966_04_T01230_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844368_GEDI02_A_2019176185135_O03027_04_T02454_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844369_GEDI02_A_2019180044819_O03080_01_T02400_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844365_GEDI02_A_2019165104412_O02851_01_T04481_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844366_GEDI02_A_2019165230622_O02859_04_T04183_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844370_GEDI02_A_2019180171027_O03088_04_T00679_02_004_02_V003_subsetted.h5
+  GEDI02_A 2019-06: 10 granules
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844373_GEDI02_A_2019183035532_O03126_01_T01069_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844374_GEDI02_A_2019183161740_O03134_04_T02347_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844375_GEDI02_A_2019187021510_O03187_01_T04986_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844376_GEDI02_A_2019187143726_O03195_04_T00419_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844378_GEDI02_A_2019191125716_O03256_04_T04336_02_004_02_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844379_GEDI02_A_2019197220249_O03355_01_T05644_02_004_03_V003_subsetted.h5
+----- stdout -----
+../data/raw/gedi_tmp/GEDI02_A/380844383_GEDI02_A_2019209061230_O03531_04_T03158_02_004_02_V003_subsetted.h5
+------------------
+
+[31m---------------------------------------------------------------------------[39m
+[31mKeyError[39m                                  Traceback (most recent call last)
+[36mCell[39m[36m [39m[32mIn[3][39m[32m, line 110[39m
+[32m    106[39m gedi_granules = {}
+[32m    107[39m [38;5;28;01mfor[39;00m short_name, (path, reader) [38;5;28;01min[39;00m GEDI.items():
+[32m    108[39m     granule_list = RAW / f"{short_name.lower()}_granules.json"
+[32m    109[39m     [38;5;28;01mif[39;00m [38;5;28;01mnot[39;00m path.exists():
+[32m--> [39m[32m110[39m         df, used = harmony_product(client, short_name, reader)
+[32m    111[39m         df.to_parquet(path)
+[32m    112[39m         granule_list.write_text(json.dumps(used, indent=[32m1[39m))
+[32m    113[39m     df = pd.read_parquet(path)
+
+[36mCell[39m[36m [39m[32mIn[3][39m[32m, line 90[39m, in [36mharmony_product[39m[34m(client, short_name, reader)[39m
+[32m     86[39m         client.wait_for_processing(job, show_progress=[38;5;28;01mFalse[39;00m)
+[32m     87[39m         n = [32m0[39m
+[32m     88[39m         [38;5;28;01mfor[39;00m fut [38;5;28;01min[39;00m client.download_all(job, directory=str(tmp), overwrite=[38;5;28;01mTrue[39;00m):
+[32m     89[39m             path = Path(fut.result())
+[32m---> [39m[32m90[39m             footprints(path, reader).to_parquet(parts / f"{path.stem}.parquet")
+[32m     91[39m             path.unlink()
+[32m     92[39m             n += [32m1[39m
+[32m     93[39m         done.write_text(f"{n} granules, Harmony job {job}\n")
+
+[36mCell[39m[36m [39m[32mIn[3][39m[32m, line 48[39m, in [36mfootprints[39m[34m(path, reader)[39m
+[32m     44[39m     frames = []
+[32m     45[39m     [38;5;28;01mwith[39;00m h5py.File(path, [33m"r"[39m) [38;5;28;01mas[39;00m h5:
+[32m     46[39m         [38;5;28;01mfor[39;00m beam [38;5;28;01min[39;00m [k [38;5;28;01mfor[39;00m k [38;5;28;01min[39;00m h5 [38;5;28;01mif[39;00m k.startswith([33m"BEAM"[39m)]:
+[32m     47[39m             b = h5[beam]
+[32m---> [39m[32m48[39m             lat, lon = find(b, [33m"lat_lowestmode"[39m)[:], find(b, [33m"lon_lowestmode"[39m)[:]
+[32m     49[39m             [38;5;28;01mif[39;00m lat.size == [32m0[39m:
+[32m     50[39m                 [38;5;28;01mcontinue[39;00m
+[32m     51[39m             frames.append(pd.DataFrame({
+
+[36mCell[39m[36m [39m[32mIn[3][39m[32m, line 20[39m, in [36mfind[39m[34m(group, name)[39m
+[32m     16[39m     hits = []
+[32m     17[39m     group.visititems(lambda path, obj: hits.append(obj) if isinstance(obj, h5py.Dataset)
+[32m     18[39m                      [38;5;28;01mand[39;00m path.split([33m"/"[39m)[-[32m1[39m] == name [38;5;28;01melse[39;00m [38;5;28;01mNone[39;00m)
+[32m     19[39m     [38;5;28;01mif[39;00m [38;5;28;01mnot[39;00m hits:
+[32m---> [39m[32m20[39m         [38;5;28;01mraise[39;00m KeyError(f"{name} not in {group.name}")
+[32m     21[39m     [38;5;28;01mreturn[39;00m hits[[32m0[39m]
+
+[31mKeyError[39m: 'lat_lowestmode not in /BEAM0101'
+
 RuleException:
 CalledProcessError in file "/opt/vth/OpenAIRE_Alien_AI_Hackathon/biodiversity/beni-canopy-height-ebv/Snakefile", line 33:
-Command 'set -euo pipefail;  cd notebooks && jupytext --to notebook --execute 01_data_download.py 2>&1 | tee ../results/logs/01_data_download.log' died with <Signals.SIGTERM: 15>.
-[Thu Oct  1 15:17:23 2026]
+Command 'set -euo pipefail;  cd notebooks && jupytext --to notebook --execute 01_data_download.py 2>&1 | tee ../results/logs/01_data_download.log' returned non-zero exit status 1.
+[Thu Oct  1 15:52:22 2026]
 Error in rule data_download:
     message: None
     jobid: 4
@@ -42,8 +312,17 @@ Error in rule data_download:
         (command exited with non-zero exit code)
 Removing output files of failed job data_download since they might be corrupted:
 data/raw/biomass_fh/items.json
-Will exit after finishing currently running jobs (scheduler).
 Shutting down, this might take some time.
-Complete log(s): /opt/vth/OpenAIRE_Alien_AI_Hackathon/biodiversity/beni-canopy-height-ebv/.snakemake/log/2026-10-01T142543.765477.snakemake.log
+Exiting because a job execution failed. Look below for error messages
+[Thu Oct  1 15:52:22 2026]
+Error in rule data_download:
+    message: None
+    jobid: 4
+    output: data/raw/sources.json, data/raw/biomass_fh/items.json, data/raw/gedi_l2a_beni.parquet, data/raw/gedi_l2b_beni.parquet, data/raw/worldcover2021_treecover_fraction_100m.nc
+    log: results/logs/01_data_download.log (check log file(s) for error details)
+    shell:
+        cd notebooks && jupytext --to notebook --execute 01_data_download.py 2>&1 | tee ../results/logs/01_data_download.log
+        (command exited with non-zero exit code)
+Complete log(s): /opt/vth/OpenAIRE_Alien_AI_Hackathon/biodiversity/beni-canopy-height-ebv/.snakemake/log/2026-10-01T153142.933669.snakemake.log
 WorkflowError:
 At least one job did not complete successfully.

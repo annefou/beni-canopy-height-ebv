@@ -211,7 +211,10 @@ def footprints(path: Path, reader) -> pd.DataFrame:
     with h5py.File(path, "r") as h5:
         for beam in [k for k in h5 if k.startswith("BEAM")]:
             b = h5[beam]
-            lat, lon = find(b, "lat_lowestmode")[:], find(b, "lon_lowestmode")[:]
+            try:
+                lat, lon = find(b, "lat_lowestmode")[:], find(b, "lon_lowestmode")[:]
+            except KeyError:  # Harmony leaves the group of a beam with no footprints in the box nearly empty
+                continue
             if lat.size == 0:
                 continue
             frames.append(pd.DataFrame({
