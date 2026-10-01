@@ -32,10 +32,13 @@
 #
 # | Service | Environment variables | Where to get them |
 # |---|---|---|
-# | ESA MAAP | `MAAP_OFFLINE_TOKEN` (or `MAAP_TOKEN_FILE`, a path to a file holding it), `MAAP_CLIENT_SECRET`, optional `MAAP_CLIENT_ID` (default `offline-token`) | token: <https://portal.maap.eo.esa.int/ini/services/auth/token/> (valid 90 days); client id/secret: ESA MAAP's BIOMASS data-access example |
+# | ESA MAAP | `MAAP_OFFLINE_TOKEN`, or `MAAP_TOKEN_FILE` (a path to a file holding it) | <https://portal.maap.eo.esa.int/ini/services/auth/token/> (valid 90 days) |
 # | NASA Earthdata | `EARTHDATA_USERNAME`, `EARTHDATA_PASSWORD` (or a `~/.netrc` entry for `urs.earthdata.nasa.gov`) | <https://urs.earthdata.nasa.gov> |
 #
-# In CI, store them as GitHub Actions secrets of the same names.
+# In CI, store them as GitHub Actions secrets of the same names. The MAAP token exchange also needs a client id and
+# secret; these are public, the same for every user, and published in ESA MAAP's token-access example
+# (<https://docs.maap-project.org/en/latest/science/ESA_CCI/ESA_CCI_V5_Token_Access.html>), so they are the defaults
+# below (`MAAP_CLIENT_ID` / `MAAP_CLIENT_SECRET` override them).
 #
 # Every file is recorded in `data/raw/sources.json` with its DOI, licence, access date and SHA-256. Raw rasters
 # and footprints are not committed; they are re-downloadable.
@@ -57,6 +60,8 @@ BIO_DIR.mkdir(parents=True, exist_ok=True)
 BBOX = (-67.5, -15.5, -64.5, -12.5)  # lon_min, lat_min, lon_max, lat_max
 MAAP_CATALOG = "https://catalog.maap.eo.esa.int/catalogue"
 MAAP_IAM = "https://iam.maap.eo.esa.int/realms/esa-maap/protocol/openid-connect/token"
+# Public client of ESA MAAP's token-access example (not a personal credential).
+MAAP_PUBLIC_CLIENT = ("offline-token", "p1eL7uonXs6MDxtGbgKdPVRAmnGxHpVE")
 GEDI_START, GEDI_END = "2019-04-04", "2025-07-10"  # the whole GEDI L2A V002 record (CMR temporal extent)
 
 
@@ -89,10 +94,10 @@ def maap_access_token() -> str:
     offline = os.environ.get("MAAP_OFFLINE_TOKEN")
     if not offline and os.environ.get("MAAP_TOKEN_FILE"):
         offline = Path(os.environ["MAAP_TOKEN_FILE"]).read_text()
-    secret = os.environ.get("MAAP_CLIENT_SECRET", "")
-    if not offline or not secret:
-        sys.exit("Set MAAP_OFFLINE_TOKEN (or MAAP_TOKEN_FILE) and MAAP_CLIENT_SECRET; see the table above.")
-    r = requests.post(MAAP_IAM, data={"client_id": os.environ.get("MAAP_CLIENT_ID", "offline-token"),
+    if not offline:
+        sys.exit("Set MAAP_OFFLINE_TOKEN (or MAAP_TOKEN_FILE); see the table above.")
+    secret = os.environ.get("MAAP_CLIENT_SECRET", MAAP_PUBLIC_CLIENT[1])
+    r = requests.post(MAAP_IAM, data={"client_id": os.environ.get("MAAP_CLIENT_ID", MAAP_PUBLIC_CLIENT[0]),
                                       "client_secret": secret, "grant_type": "refresh_token",
                                       "refresh_token": offline.strip().replace("\n", ""),
                                       "scope": "offline_access openid"}, timeout=60)
