@@ -15,7 +15,7 @@
 
 # %% [markdown]
 # # 04 — Figures
-# Top: BIOMASS forest height, GEDI RH98 and the canopy-height EBV with its uncertainty, drawn as true WGS84
+# Top: BIOMASS forest height, GEDI RH98 and the canopy-height EBV dataset (Ecosystem Vertical Profile) with its uncertainty, drawn as true WGS84
 # HEALPix cell outlines. Bottom: BIOMASS against GEDI on the calibration cells, and disagreement by BIOMASS bias
 # index tercile.
 
@@ -60,7 +60,7 @@ def cell_map(ax, cell_ids, values, title, cmap="YlGn", vmin=0, vmax=35):
 fig, axs = plt.subplots(2, 3, figsize=(15, 9.5), constrained_layout=True)
 cell_map(axs[0, 0], src.cell_ids, src["biomass_forest_height"], "BIOMASS forest height (H100), 2026")
 cell_map(axs[0, 1], src.cell_ids, src["gedi_rh98"], "GEDI RH98, cell median, 2019-2025")
-cell_map(axs[0, 2], ebv.cell_ids, ebv["canopy_height"], "Canopy-height EBV (GEDI RH98 scale)")
+cell_map(axs[0, 2], ebv.cell_ids, ebv["canopy_height"], "EBV dataset: canopy height (GEDI RH98 scale)")
 
 ax = axs[1, 0]
 ax.scatter(cal["biomass_forest_height"], cal["gedi_rh98"], s=6, alpha=0.4, color="#0072B2")

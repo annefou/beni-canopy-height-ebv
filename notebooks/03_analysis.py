@@ -14,11 +14,11 @@
 # ---
 
 # %% [markdown]
-# # 03 — Analysis: from BIOMASS forest height to a canopy-height EBV
+# # 03 — Analysis: from BIOMASS forest height to an EBV dataset (Ecosystem Vertical Profile)
 #
 # **Question (PICO).** Population: forest cells of the Beni lowlands on HEALPix depth 11. Intervention: ESA BIOMASS
 # L2A forest height (H100, 2026). Comparator: GEDI L2A RH98 (2019–2025). Outcome: agreement (bias, error, rank
-# correlation), and whether a calibration model turns BIOMASS heights into a canopy-height EBV with stated
+# correlation), and whether a calibration model turns BIOMASS heights into a canopy-height dataset for the GEO BON EBV *Ecosystem Vertical Profile*, with stated
 # per-cell uncertainty.
 #
 # Steps:
@@ -149,8 +149,10 @@ ebv = xr.Dataset(
 ebv.attrs.update(dggs_attrs(DEPTH))
 ebv.attrs.update({
     "Conventions": "CF-1.8",
-    "title": "Canopy height EBV (prototype), Beni lowlands, from ESA BIOMASS calibrated against GEDI",
-    "ebv_class": "Ecosystem structure",
+    "title": "Canopy height, EBV dataset for Ecosystem Vertical Profile (prototype), Beni lowlands, from ESA BIOMASS calibrated against GEDI",
+    "ebv_class": "Ecosystem Structure",
+    "ebv_name": "Ecosystem Vertical Profile",
+    "ebv_source": "GEO BON EBV list, 6 classes and 21 EBV names (https://geobon.org/ebvs/what-are-ebvs/, read 2026-10-01)",
     "remote_sensing_biodiversity_product": "Vegetation height",
     "remote_sensing_enabled_biodiversity_variable": "Habitat structure",
     "ebv_mapping_source": ("Skidmore et al. 2021, Nat. Ecol. Evol. 5:896-906, doi:10.1038/s41559-021-01451-x, "

@@ -15,7 +15,7 @@
       "@id": "./",
       "@type": ["Dataset", "ResearchObject"],
       "name": "beni-canopy-height-ebv",
-      "description": "A canopy-height Essential Biodiversity Variable for the Beni lowlands (Bolivia) from ESA BIOMASS forest height, calibrated against GEDI lidar and gap-filled, on WGS84 HEALPix.",
+      "description": "A canopy-height dataset for the Essential Biodiversity Variable Ecosystem Vertical Profile, Beni lowlands (Bolivia) from ESA BIOMASS forest height, calibrated against GEDI lidar and gap-filled, on WGS84 HEALPix.",
       "datePublished": "2026-10-01",
       "license": { "@id": "https://spdx.org/licenses/MIT" },
       "publisher": { "@id": "https://orcid.org/0000-0002-1784-2920" },
