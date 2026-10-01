@@ -1,0 +1,49 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "name": "beni-canopy-height-ebv",
+  "description": "A canopy-height Essential Biodiversity Variable for the Beni lowlands (Bolivia) from ESA BIOMASS forest height, calibrated against GEDI lidar and gap-filled, on WGS84 HEALPix.",
+  "version": "0.1.0",
+  "dateCreated": "2026-10-01",
+  "dateModified": "2026-10-01",
+  "license": "https://spdx.org/licenses/MIT",
+  "codeRepository": "https://github.com/annefou/beni-canopy-height-ebv",
+  "identifier": "{{ZENODO_DOI}}",
+  "@id": "{{ZENODO_DOI}}",
+  "programmingLanguage": {
+    "@type": "ComputerLanguage",
+    "name": "Python",
+    "version": "3.12"
+  },
+  "operatingSystem": ["Linux", "macOS"],
+  "author": [
+    {
+      "@type": "Person",
+      "givenName": "Anne",
+      "familyName": "Fouilloux",
+      "@id": "https://orcid.org/0000-0002-1784-2920",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "LifeWatch ERIC"
+      }
+    }
+  ],
+  "keywords": [
+    "replication",
+    "reproducibility",
+    "FORRT",
+    "nanopublication",
+    "Science-Live"
+  ],
+  "referencePublication": {
+    "@type": "ScholarlyArticle",
+    "name": "Priority list of biodiversity metrics to observe from space",
+    "datePublished": "2021",
+    "@id": "https://doi.org/10.1038/s41559-021-01451-x"
+  },
+  "isPartOf": {
+    "@type": "Organization",
+    "name": "Science Live",
+    "url": "https://platform.sciencelive4all.org"
+  }
+}

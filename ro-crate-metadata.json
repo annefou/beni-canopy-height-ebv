@@ -1,0 +1,139 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.2/context",
+  "@graph": [
+    {
+      "@type": "CreativeWork",
+      "@id": "ro-crate-metadata.json",
+      "conformsTo": [
+        { "@id": "https://w3id.org/ro/crate/1.2" },
+        { "@id": "https://w3id.org/ro/wfrun/process/0.5" },
+        { "@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0" }
+      ],
+      "about": { "@id": "./" }
+    },
+    {
+      "@id": "./",
+      "@type": ["Dataset", "ResearchObject"],
+      "name": "beni-canopy-height-ebv",
+      "description": "A canopy-height Essential Biodiversity Variable for the Beni lowlands (Bolivia) from ESA BIOMASS forest height, calibrated against GEDI lidar and gap-filled, on WGS84 HEALPix.",
+      "datePublished": "2026-10-01",
+      "license": { "@id": "https://spdx.org/licenses/MIT" },
+      "publisher": { "@id": "https://orcid.org/0000-0002-1784-2920" },
+      "author": [{ "@id": "https://orcid.org/0000-0002-1784-2920" }],
+      "mainEntity": { "@id": "Snakefile" },
+      "hasPart": [
+        { "@id": "Snakefile" },
+        { "@id": "pixi.toml" },
+        { "@id": "pixi.lock" },
+        { "@id": "Dockerfile" },
+        { "@id": "notebooks/01_data_download.py" },
+        { "@id": "notebooks/02_data_clean.py" },
+        { "@id": "notebooks/03_analysis.py" },
+        { "@id": "notebooks/04_figures.py" },
+        { "@id": "paper/" },
+        { "@id": "data/" },
+        { "@id": "results/" },
+        { "@id": "figures/" },
+        { "@id": "nanopubs/PUBLISHED.md" }
+      ],
+      "citation": [
+        { "@id": "https://doi.org/10.1038/s41559-021-01451-x" }
+      ]
+    },
+    {
+      "@id": "https://orcid.org/0000-0002-1784-2920",
+      "@type": "Person",
+      "name": "Anne Fouilloux",
+      "affiliation": "LifeWatch ERIC"
+    },
+    {
+      "@id": "Snakefile",
+      "@type": ["File", "SoftwareSourceCode", "ComputationalWorkflow"],
+      "name": "Replication pipeline",
+      "description": "Snakemake workflow orchestrating data download, cleaning, analysis, and figure generation.",
+      "programmingLanguage": { "@id": "https://w3id.org/workflowhub/workflow-ro-crate#snakemake" },
+      "input": [{ "@id": "paper/" }, { "@id": "pixi.toml" }, { "@id": "pixi.lock" }],
+      "output": [{ "@id": "results/" }, { "@id": "figures/" }, { "@id": "nanopubs/PUBLISHED.md" }]
+    },
+    {
+      "@id": "https://w3id.org/workflowhub/workflow-ro-crate#snakemake",
+      "@type": "ComputerLanguage",
+      "name": "Snakemake",
+      "url": "https://snakemake.readthedocs.io/"
+    },
+    {
+      "@id": "pixi.toml",
+      "@type": ["File", "ConfigurationFile"],
+      "name": "Pixi workspace manifest (declared dependencies, features, tasks)",
+      "encodingFormat": "application/toml"
+    },
+    {
+      "@id": "pixi.lock",
+      "@type": ["File", "ConfigurationFile"],
+      "name": "Pixi per-platform lockfile (every package pinned to an exact build hash)",
+      "encodingFormat": "application/yaml"
+    },
+    {
+      "@id": "Dockerfile",
+      "@type": ["File", "ConfigurationFile"],
+      "name": "Container build specification",
+      "encodingFormat": "text/x-dockerfile"
+    },
+    {
+      "@id": "notebooks/01_data_download.py",
+      "@type": ["File", "SoftwareSourceCode", "Notebook"],
+      "name": "01 — Data download",
+      "programmingLanguage": "Python"
+    },
+    {
+      "@id": "notebooks/02_data_clean.py",
+      "@type": ["File", "SoftwareSourceCode", "Notebook"],
+      "name": "02 — Data clean",
+      "programmingLanguage": "Python"
+    },
+    {
+      "@id": "notebooks/03_analysis.py",
+      "@type": ["File", "SoftwareSourceCode", "Notebook"],
+      "name": "03 — Analysis",
+      "programmingLanguage": "Python"
+    },
+    {
+      "@id": "notebooks/04_figures.py",
+      "@type": ["File", "SoftwareSourceCode", "Notebook"],
+      "name": "04 — Figures",
+      "programmingLanguage": "Python"
+    },
+    {
+      "@id": "paper/",
+      "@type": "Dataset",
+      "name": "Source paper PDF (drop yours here)"
+    },
+    {
+      "@id": "data/",
+      "@type": "Dataset",
+      "name": "Downloaded input data (gitignored; populated by 01_data_download.py)"
+    },
+    {
+      "@id": "results/",
+      "@type": "Dataset",
+      "name": "Analysis output artefacts"
+    },
+    {
+      "@id": "figures/",
+      "@type": "Dataset",
+      "name": "Curated figures used in the Jupyter Book"
+    },
+    {
+      "@id": "nanopubs/PUBLISHED.md",
+      "@type": ["File", "TextObject"],
+      "name": "Registry of published FORRT nanopub URIs",
+      "description": "URIs of the published Quote / AIDA / FORRT Claim / Replication Study / Replication Outcome / CiTO Citation steps."
+    },
+    {
+      "@id": "https://doi.org/10.1038/s41559-021-01451-x",
+      "@type": "ScholarlyArticle",
+      "name": "Priority list of biodiversity metrics to observe from space",
+      "datePublished": "2021"
+    }
+  ]
+}
