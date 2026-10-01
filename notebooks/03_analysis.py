@@ -151,8 +151,12 @@ ebv.attrs.update({
     "Conventions": "CF-1.8",
     "title": "Canopy height EBV (prototype), Beni lowlands, from ESA BIOMASS calibrated against GEDI",
     "ebv_class": "Ecosystem structure",
-    "ebv_name": "Ecosystem vertical profile",
-    "ebv_name_comment": "Mapping to the GEO BON EBV catalogue to be confirmed before publication.",
+    "remote_sensing_biodiversity_product": "Vegetation height",
+    "remote_sensing_enabled_biodiversity_variable": "Habitat structure",
+    "ebv_mapping_source": ("Skidmore et al. 2021, Nat. Ecol. Evol. 5:896-906, doi:10.1038/s41559-021-01451-x, "
+                           "Table 2 no. 14 (rank 7 within Ecosystem structure, 11 across all EBV classes). "
+                           "That paper merges the EBV candidates 'live cover fraction' and 'ecosystem vertical "
+                           "profile' into the variable 'habitat structure'."),
     **{f"model_{k}": v for k, v in model.items()},
 })
 ebv.to_zarr(RESULTS / "beni_canopy_height_ebv.zarr", group=f"measurements/canopy_height/{DEPTH}", mode="w",

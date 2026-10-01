@@ -44,4 +44,8 @@ references:
       - family-names: "Skidmore"
         given-names: "Andrew K."
     year: "2021"
+    journal: "Nature Ecology & Evolution"
+    volume: 5
+    start: 896
+    end: 906
     doi: "10.1038/s41559-021-01451-x"
