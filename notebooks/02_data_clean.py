@@ -45,7 +45,7 @@
 
 # %%
 import json
-import re
+
 from pathlib import Path
 
 import healpix_connector
@@ -68,16 +68,50 @@ EPS = 0.01  # ESA's adjustment factor in the inverse-bias weights (FH ATBD eq. 3
 print("healpix-connector", healpix_connector.__version__, f"| depth {DEPTH} = {cell_size_m(DEPTH)/1e3:.2f} km")
 
 # %% [markdown]
+# ## Ecosystem focus group: forest
+#
+# The EBV is defined per ecosystem focus group. Here the group is forest: ESA WorldCover 2021 class 10, "Tree
+# cover". A cell belongs to the group when at least half of it is tree cover. A GEDI footprint, and a BIOMASS
+# pixel, belongs to it when the 100 m block it falls in is at least half tree cover, so that both height sources
+# describe the forest in the cell, not the cell. The thresholds are ours and are recorded.
+
+# %%
+FOREST_MIN = 0.5
+wc = xr.open_dataset(RAW / "worldcover2021_treecover_fraction_100m.nc")
+wres = float(abs(wc.lon[1] - wc.lon[0]))
+tc = bin_to_cells(wc.tree_cover_fraction.values.astype("float64"), wc.lon.values, wc.lat.values, DEPTH, wres)
+tree = pd.Series(tc.mean, index=pd.Index(tc.cell_ids, name="cell_id"), name="tree_cover_fraction")
+
+
+MIN_FOREST_PX = 25  # BIOMASS pixels are posted every ~90 m: 25 pixels is ~0.2 km2 of forest in a ~10 km2 cell
+
+
+def in_forest(lon: np.ndarray, lat: np.ndarray) -> np.ndarray:
+    f = wc.tree_cover_fraction.sel(lon=xr.DataArray(lon), lat=xr.DataArray(lat), method="nearest").values
+    return f >= FOREST_MIN
+
+
+def tree_fraction_at(lon: np.ndarray, lat: np.ndarray) -> np.ndarray:
+    """WorldCover tree-cover fraction at the centre of every pixel of a regular (lat, lon) grid."""
+    return wc.tree_cover_fraction.sel(lon=xr.DataArray(lon, dims="x"), lat=xr.DataArray(lat, dims="y"),
+                                      method="nearest").values
+
+
+print(f"{(tree >= FOREST_MIN).mean()*100:.0f} % of cells are at least {FOREST_MIN:.0%} tree cover")
+
+# %% [markdown]
 # ## BIOMASS forest height, repeat passes combined the ESA way
 #
 # ESA's own L2b fusion averages passes pixel by pixel with weights 1/(ε + bias) (ATBD eq. 3.19). Here each pass is
 # first binned to cells (mean height and mean bias per cell), then passes are combined per cell with weights
 # pixel count / (ε + cell-mean bias): the cell-level analogue, stated as such.
 #
-# One product-level exclusion rule: a product whose **median bias is below 1 %** is set aside as suspect. A whole
-# inversion with near-zero bias is implausible; in the ESA Frontiers `beni-pipeline` the two products with this
-# pattern also lacked a height of ambiguity in their annotation and gave heights 20–26 m above overlapping
-# passes. The annotation XML is searched for "ambiguity" and the count is recorded, so the rule can be checked.
+# Only forest pixels enter the height (focus group above); whether a cell is fully covered by the swath is judged
+# on all valid pixels, and a cell needs at least `MIN_FOREST_PX` forest pixels in a pass.
+#
+# One product-level exclusion rule: a product whose **median bias is below 1 %** is set aside as suspect, since a
+# whole inversion with near-zero bias is implausible. To make the rule checkable, the table below also gives each
+# product's median height on clearly non-forest pixels (tree cover < 20 %), which should be close to zero.
 
 # %%
 def clipped_bbox(path: Path) -> tuple[float, float, float, float]:
@@ -99,12 +133,13 @@ for it in items:
     fh_name, q_name = it["files"].get("enclosure_i_fh_tiff"), it["files"].get("enclosure_i_quality_tiff")
     if not (fh_name and q_name):
         continue
-    xml = RAW / "biomass_fh" / it["files"].get("enclosure_xml", "")
-    n_ambig = len(re.findall("ambiguity", xml.read_text(), re.I)) if xml.is_file() else None
     fh, q = read_masked(RAW / "biomass_fh" / fh_name), read_masked(RAW / "biomass_fh" / q_name)
+    tf = tree_fraction_at(fh.lon, fh.lat)
     med_bias = float(np.nanmedian(q.values))
     rec = {"id": it["id"], "start": it["start"], "processor": it["processor"],
-           "median_bias_pct": round(med_bias, 2), "ambiguity_mentions_in_annotation": n_ambig,
+           "median_bias_pct": round(med_bias, 2),
+           "median_height_forest_px_m": round(float(np.nanmedian(fh.values[tf >= FOREST_MIN])), 1),
+           "median_height_nonforest_px_m": round(float(np.nanmedian(fh.values[tf < 0.2])), 1),
            "excluded": med_bias < 1.0}
     products.append(rec)
     if rec["excluded"]:
@@ -113,15 +148,20 @@ for it in items:
     invalid = np.isnan(fh.values) | np.isnan(q.values)  # use only pixels valid in both layers
     fh.values[invalid] = np.nan
     q.values[invalid] = np.nan
+    s_all = bin_to_cells(fh.values, fh.lon, fh.lat, DEPTH, fh.res_deg)  # swath coverage, all valid pixels
+    nonforest = tf < FOREST_MIN
+    fh.values[nonforest] = np.nan
+    q.values[nonforest] = np.nan
     s_fh = bin_to_cells(fh.values, fh.lon, fh.lat, DEPTH, fh.res_deg)
     s_q = bin_to_cells(q.values, q.lon, q.lat, DEPTH, q.res_deg)
     assert np.array_equal(s_fh.cell_ids, s_q.cell_ids)
-    full = s_fh.coverage > 0.9  # cells the swath covers fully
+    cov = pd.Series(s_all.coverage, index=s_all.cell_ids).reindex(s_fh.cell_ids).to_numpy()
+    full = (cov > 0.9) & (s_fh.pixel_count >= MIN_FOREST_PX)  # swath covers the cell; enough forest pixels
     per_pass.append(pd.DataFrame({"cell_id": s_fh.cell_ids[full], "fh": s_fh.mean[full], "bias": s_q.mean[full],
                                   "fh_within_std": s_fh.std[full], "n_px": s_fh.pixel_count[full],
                                   "start": it["start"]}))
 products = pd.DataFrame(products)
-print(products[["start", "median_bias_pct", "ambiguity_mentions_in_annotation", "excluded"]].to_string())
+print(products[["start", "median_bias_pct", "median_height_forest_px_m", "median_height_nonforest_px_m", "excluded"]].to_string())
 
 # %%
 p = pd.concat(per_pass, ignore_index=True)
@@ -135,29 +175,7 @@ bio = pd.DataFrame({
     "n_passes": g.size(),
 })
 bio["fh_within_cv"] = bio["fh_within_std"] / bio["fh"]  # structural complexity (Valbuena et al. 2020)
-print(f"{len(bio)} cells with BIOMASS forest height from {products['excluded'].eq(False).sum()} products")
-
-# %% [markdown]
-# ## Ecosystem focus group: forest
-#
-# The EBV is defined per ecosystem focus group. Here the group is forest: ESA WorldCover 2021 class 10, "Tree
-# cover". A cell belongs to the group when at least half of it is tree cover; a GEDI footprint belongs to it when
-# the 100 m block it falls in is at least half tree cover. Both thresholds are ours and are recorded.
-
-# %%
-FOREST_MIN = 0.5
-wc = xr.open_dataset(RAW / "worldcover2021_treecover_fraction_100m.nc")
-wres = float(abs(wc.lon[1] - wc.lon[0]))
-tc = bin_to_cells(wc.tree_cover_fraction.values.astype("float64"), wc.lon.values, wc.lat.values, DEPTH, wres)
-tree = pd.Series(tc.mean, index=pd.Index(tc.cell_ids, name="cell_id"), name="tree_cover_fraction")
-
-
-def in_forest(lon: np.ndarray, lat: np.ndarray) -> np.ndarray:
-    f = wc.tree_cover_fraction.sel(lon=xr.DataArray(lon), lat=xr.DataArray(lat), method="nearest").values
-    return f >= FOREST_MIN
-
-
-print(f"{(tree >= FOREST_MIN).mean()*100:.0f} % of cells are at least {FOREST_MIN:.0%} tree cover")
+print(f"{len(bio)} cells with BIOMASS forest height (forest pixels only) from {products['excluded'].eq(False).sum()} products")
 
 # %% [markdown]
 # ## GEDI footprints per cell
@@ -280,7 +298,7 @@ ds = xr.Dataset(
     {
         "biomass_forest_height": var("fh", {
             "standard_name": "canopy_height", "units": "m", "long_name": "BIOMASS forest height (H100)",
-            "definition": FH_DEF, "support": "200 m radar pixels, area-weighted mean over the cell",
+            "definition": FH_DEF, "support": "200 m radar pixels (posted every ~90 m) on forest blocks (WorldCover tree cover >= 50 %), area-weighted mean over the cell",
             "statistic": "per pass: area-weighted cell mean; across passes: weighted mean, weights pixel_count/(0.01+bias)",
             "cell_methods": "area: mean", "ancillary_variables": "biomass_fh_bias biomass_n_passes",
             "source": "ESA BIOMASS L2A FP_FH__L2A via ESA MAAP (collection BiomassLevel2a)"}),
