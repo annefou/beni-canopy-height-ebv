@@ -31,7 +31,7 @@ For question-rooted chains where there is no original paper to confirm/dispute, 
 
 > **Note:** `replicates` is NOT in the Science Live dropdown (despite existing in upstream CiTO). When citing a notebook/tutorial that was directly reused, use **`credits`** instead.
 
-Question-rooted chain: Skidmore et al. 2021 is not confirmed or qualified here; it is the authority for vegetation height as a satellite biodiversity product (Table 2, no. 14). **Set this by hand in the wizard:** `scripts/build_chain_draft.py` derives the type from the validation status and would pre-fill `qualifies`.
+Question-rooted chain: Skidmore et al. 2021 is not confirmed or qualified here; it is the authority for vegetation height as a satellite biodiversity product (Table 2, no. 14). `build-chain-draft` uses this type as written (it would otherwise derive `qualifies` from the validation status).
 
 ```
 cites as authority

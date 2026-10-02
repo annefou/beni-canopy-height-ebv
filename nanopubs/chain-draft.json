@@ -4,7 +4,7 @@
   "chain_shape": "pico",
   "source": {
     "repository": "https://github.com/OWNER/beni-canopy-height-ebv",
-    "commit": "7c35a93741fc65a888bdda47a904e0bb138db3ed",
+    "commit": "011b7265a18913db1f1917f7738c0198c3be9d91",
     "figure": "figures/main_result.png"
   },
   "steps": [
@@ -60,11 +60,23 @@
             "uri": "http://www.wikidata.org/entity/Q740686",
             "label": "synthetic aperture radar"
           }
+        ],
+        "st3": [
+          {
+            "dataset": "https://doi.org/10.57780/bio-65e97bc"
+          },
+          {
+            "dataset": "https://doi.org/10.5067/GEDI/GEDI02_A.003"
+          },
+          {
+            "dataset": "https://doi.org/10.5281/zenodo.7254221"
+          }
         ]
       },
       "provenance": {
         "aida": "nanopubs/drafts/02_aida.md",
-        "topic": "nanopubs/drafts/02_aida.md + Wikidata"
+        "topic": "nanopubs/drafts/02_aida.md + Wikidata",
+        "st3": "nanopubs/drafts/02_aida.md"
       },
       "published_uri": null
     },
@@ -179,13 +191,29 @@
       "prefill": {
         "st02": [
           {
-            "cites": "http://purl.org/spar/cito/qualifies",
+            "cites": "http://purl.org/spar/cito/citesAsAuthority",
             "cited": "https://doi.org/10.1038/s41559-021-01451-x"
+          },
+          {
+            "cites": "http://purl.org/spar/cito/citesAsAuthority",
+            "cited": "https://doi.org/10.1016/j.tree.2020.03.006"
+          },
+          {
+            "cites": "http://purl.org/spar/cito/citesAsAuthority",
+            "cited": "https://doi.org/10.1126/science.1229931"
+          },
+          {
+            "cites": "http://purl.org/spar/cito/usesDataFrom",
+            "cited": "https://doi.org/10.57780/bio-65e97bc"
+          },
+          {
+            "cites": "http://purl.org/spar/cito/usesDataFrom",
+            "cited": "https://doi.org/10.5067/GEDI/GEDI02_A.003"
           }
         ]
       },
       "provenance": {
-        "st02": "cites = validation status (see 05_outcome); cited = CITATION.cff references[article]"
+        "st02": "cites = nanopubs/drafts/06_citation.md; cited = CITATION.cff references[article]; further rows = nanopubs/drafts/06_citation.md"
       },
       "published_uri": null
     }

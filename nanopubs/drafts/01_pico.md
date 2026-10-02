@@ -41,7 +41,7 @@ In the forests of the Beni lowlands of Bolivia (population), how does canopy hei
 ```
 
 <!-- field: type -->
-### Choose the type of research question (dropdown, required)
+### Question Type (dropdown, required)
 
 - [ ] causation research question - (Does factor X cause outcome Y?)
 - [x] descriptive research question - (What are the characteristics of X?)
