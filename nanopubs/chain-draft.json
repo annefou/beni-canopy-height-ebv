@@ -1,0 +1,220 @@
+{
+  "schema_version": "1.0",
+  "kind": "forrt-chain-draft",
+  "chain_shape": "pico",
+  "source": {
+    "repository": "https://github.com/OWNER/beni-canopy-height-ebv",
+    "commit": "7c35a93741fc65a888bdda47a904e0bb138db3ed",
+    "figure": "figures/main_result.png"
+  },
+  "steps": [
+    {
+      "step": "01_pico",
+      "template_key": "PICO_RESEARCH_QUESTION",
+      "template_uri": "https://w3id.org/np/RA5e5XeXy_-aNK5giB7kBAEQslTLVydHeM4YYEzhmEE2w",
+      "prefill": {
+        "pico": "beni-forest-height-biomass-vs-gedi",
+        "label": "How does ESA BIOMASS forest height compare with spaceborne-lidar canopy height in Bolivian lowland forests?",
+        "description": "In the forests of the Beni lowlands of Bolivia (population), how does canopy height estimated from the ESA BIOMASS P-band radar mission (intervention) compare with canopy height measured by spaceborne lidar from NASA GEDI (comparator), in terms of systematic difference, agreement and ranking of forest height (outcome)? The question matters because BIOMASS is the first satellite designed to map forest structure globally, and forest height is a direct input to the Essential Biodiversity Variable Ecosystem Vertical Profile.",
+        "type": "https://w3id.org/sciencelive/o/terms/DescriptiveResearchQuestion",
+        "populationDescription": "Tropical lowland forests of the Beni savanna-forest mosaic in Bolivia, including gallery forests and forest islands, considered as the forest ecosystem focus group within a landscape of grassland and savanna.",
+        "interventionGroupDescription": "Forest height (top-of-canopy height of the stand) estimated by synthetic aperture radar from the ESA BIOMASS mission in its first year of operations.",
+        "comparatorGroupDescription": "Canopy height measured by spaceborne waveform lidar from the NASA GEDI mission, used as the independent reference.",
+        "outcomeGroupDescription": "Systematic difference between the two canopy height estimates, their agreement and the consistency with which they rank forest areas from low to tall canopy."
+      },
+      "provenance": {
+        "pico": "nanopubs/drafts/01_pico.md",
+        "label": "nanopubs/drafts/01_pico.md",
+        "description": "nanopubs/drafts/01_pico.md",
+        "type": "nanopubs/drafts/01_pico.md",
+        "populationDescription": "nanopubs/drafts/01_pico.md",
+        "interventionGroupDescription": "nanopubs/drafts/01_pico.md",
+        "comparatorGroupDescription": "nanopubs/drafts/01_pico.md",
+        "outcomeGroupDescription": "nanopubs/drafts/01_pico.md"
+      },
+      "manual": [
+        "type"
+      ],
+      "published_uri": null
+    },
+    {
+      "step": "02_aida",
+      "template_key": "AIDA_SENTENCE",
+      "template_uri": "https://w3id.org/np/RALmXhDw3rHcMveTgbv8VtWxijUHwnSqhCmtJFIPKWVaA",
+      "prefill": {
+        "aida": "Forest canopy height estimated by the ESA BIOMASS radar mission is lower than forest canopy height measured by spaceborne lidar in the lowland forests of the Bolivian Beni.",
+        "topic": [
+          {
+            "uri": "http://www.wikidata.org/entity/Q105427924",
+            "label": "forest canopy"
+          },
+          {
+            "uri": "http://www.wikidata.org/entity/Q199687",
+            "label": "remote sensing"
+          },
+          {
+            "uri": "http://www.wikidata.org/entity/Q504027",
+            "label": "lidar"
+          },
+          {
+            "uri": "http://www.wikidata.org/entity/Q740686",
+            "label": "synthetic aperture radar"
+          }
+        ]
+      },
+      "provenance": {
+        "aida": "nanopubs/drafts/02_aida.md",
+        "topic": "nanopubs/drafts/02_aida.md + Wikidata"
+      },
+      "published_uri": null
+    },
+    {
+      "step": "03_claim",
+      "template_key": "FORRT_CLAIM",
+      "template_uri": "https://w3id.org/np/RAZWyM8D16ya3S1zhCvrG1f0iSpd9-8onVWp0FTvvX7LQ",
+      "prefill": {
+        "claim": "beni-biomass-forest-height-below-gedi",
+        "label": "ESA BIOMASS forest height lower than spaceborne-lidar canopy height, Beni lowland forests",
+        "forrtType": "https://w3id.org/sciencelive/o/terms/data_quality-FORRT-Claim",
+        "source": "https://doi.org/10.1038/s41559-021-01451-x"
+      },
+      "provenance": {
+        "claim": "nanopubs/drafts/03_claim.md",
+        "label": "nanopubs/drafts/03_claim.md",
+        "forrtType": "nanopubs/drafts/03_claim.md",
+        "source": "CITATION.cff"
+      },
+      "manual": [
+        "forrtType"
+      ],
+      "published_uri": null
+    },
+    {
+      "step": "04_study",
+      "template_key": "FORRT_REPLICATION",
+      "template_uri": "https://w3id.org/np/RAuLEjPp-4dTvPwMkfHggTto1CgjIftiGRAgHlyeEonjQ",
+      "prefill": {
+        "study": "beni-biomass-gedi-forest-height-study",
+        "label": "ESA BIOMASS forest height against GEDI lidar canopy height in Beni lowland forests, as input to the EBV Ecosystem Vertical Profile",
+        "type": "https://w3id.org/sciencelive/o/terms/Replication-Study",
+        "scope": "The claim is tested for forest canopy height only, in the lowland forests of the Beni savanna-forest mosaic in Bolivia (longitude 67.5 to 64.5 W, latitude 15.5 to 12.5 S). In scope: the systematic difference, the agreement and the rank consistency between ESA BIOMASS forest height from its first year of operations (2026) and GEDI lidar canopy height, on forest only. Out of scope: grassland and savanna, other regions, biomass (not height), the BIOMASS tomographic and Level-2B products, and field measurements, for which no open data exist in the region.",
+        "methodology": "All layers are placed on one equal-area grid, HEALPix NESTED on the WGS84 ellipsoid at depth 11 (cells of about 3.2 km). The forest focus group is ESA WorldCover 2021 tree cover: a cell, a BIOMASS pixel or a GEDI footprint counts as forest when its 100 m block is at least half tree cover. BIOMASS: Level-2A forest height (described by ESA as upper canopy height, H100) from the ESA MAAP archive; only forest pixels enter a cell's mean; repeat passes are combined per cell with ESA's inverse-bias weights, 1/(0.01 + bias), times pixel count; a product is excluded when its median height on non-forest pixels exceeds 20 m. GEDI: Level-2A version 3 relative height RH98 from full-power beams, l2a_quality_flag_rel3 = 1 and degrade_flag = 0, subset to the region with NASA Harmony; the cell value is the median over its forest footprints. Comparison cells need both heights, at least 5 GEDI footprints and no more than 5 percent of their burnable area burned in 2024 (ESA Fire_cci), since GEDI (2019-2025) predates BIOMASS. Agreement is measured by mean difference, root-mean-square difference and Spearman rank correlation; a linear relation of GEDI on BIOMASS height is evaluated by 5-fold spatial block cross-validation with blocks of about 51 km. Checks: night-time GEDI footprints only; passes combined without the bias weight; disagreement against the BIOMASS bias index. Code: notebooks/02_data_clean.py and notebooks/03_analysis.py.",
+        "deviation": "No original methodology exists: this is a question-rooted study, not a replication of a published analysis. Two choices made during the study are recorded because they change the result: BIOMASS heights were first averaged over whole cells, which mixed grassland into forest cells, and were then restricted to forest pixels; and a first product-exclusion rule (median bias index below 1 percent) also removed a plausible pass, so it was replaced by the non-forest height rule. GEDI version 3 is used instead of version 2 because NASA Harmony serves version 3, and its quality flags are defined differently.",
+        "keywordSelection": [
+          {
+            "uri": "http://www.wikidata.org/entity/Q105427924",
+            "label": "forest canopy"
+          },
+          {
+            "uri": "http://www.wikidata.org/entity/Q199687",
+            "label": "remote sensing"
+          },
+          {
+            "uri": "http://www.wikidata.org/entity/Q504027",
+            "label": "lidar"
+          },
+          {
+            "uri": "http://www.wikidata.org/entity/Q740686",
+            "label": "synthetic aperture radar"
+          },
+          {
+            "uri": "http://www.wikidata.org/entity/Q5629401",
+            "label": "HEALPix"
+          }
+        ],
+        "disciplineSelection": {
+          "uri": "http://www.wikidata.org/entity/Q2249329",
+          "label": "forest ecology"
+        }
+      },
+      "provenance": {
+        "study": "nanopubs/drafts/04_study.md",
+        "label": "nanopubs/drafts/04_study.md",
+        "type": "nanopubs/drafts/04_study.md",
+        "scope": "nanopubs/drafts/04_study.md",
+        "methodology": "nanopubs/drafts/04_study.md",
+        "deviation": "nanopubs/drafts/04_study.md",
+        "keywordSelection": "nanopubs/drafts/04_study.md + Wikidata",
+        "disciplineSelection": "nanopubs/drafts/04_study.md + Wikidata"
+      },
+      "manual": [
+        "type"
+      ],
+      "published_uri": null
+    },
+    {
+      "step": "05_outcome",
+      "template_key": "FORRT_REPLICATION_OUTCOME",
+      "template_uri": "https://w3id.org/np/RA2zljn0Nw9SadppOyxZoh-_Rxosslrq-vYG-p9SttnJE",
+      "prefill": {
+        "outcome": "beni-biomass-gedi-forest-height-outcome",
+        "label": "ESA BIOMASS forest height is lower than GEDI lidar canopy height in most Beni lowland forest, but not in low canopies",
+        "date": "2026-10-01",
+        "validationStatus": "https://w3id.org/sciencelive/o/terms/PartiallySupported",
+        "conclusion": "Partially supported. Across Beni lowland forest, ESA BIOMASS forest height is lower than GEDI lidar canopy height on average (mean difference -3.0 m, 95 percent block-bootstrap interval -4.4 to -1.1 m) and in 78 percent of forest cells, so the claim holds for most of the forest. It does not hold for low canopies: where GEDI canopy height is lowest (median 10.4 m), BIOMASS is on average 2.1 m higher. BIOMASS compresses the height range: the fitted relation crosses the 1:1 line near 24 m of BIOMASS height. The two heights rank forests only moderately consistently. BIOMASS forest height in its first year is therefore usable for the EBV Ecosystem Vertical Profile only with a stated uncertainty of several metres.",
+        "evidence": "Comparison on 1900 forest cells (HEALPix depth 11, WorldCover tree cover at least 50 percent, at least 5 GEDI footprints, at most 5 percent burned in 2024). BIOMASS minus GEDI RH98: mean -3.03 m (95 percent spatial block-bootstrap interval -4.39 to -1.06 m), median -3.83 m, root-mean-square difference 7.18 m; BIOMASS lower in 77.7 percent of cells. Spearman rank correlation 0.58, Pearson 0.52. By thirds of GEDI height (medians 10.4, 19.5, 25.6 m): mean difference +2.1, -4.6, -6.6 m; BIOMASS lower in 48, 87, 97 percent of cells. Linear relation GEDI = 8.61 + 0.645 x BIOMASS, in-sample R2 0.27, cross-validated error 6.59 m (5-fold, 42 spatial blocks). Checks: night-time footprints only, mean difference -2.91 m and Spearman 0.58 (1832 cells); passes combined without the bias weight, mean difference -3.35 m and Spearman 0.59; disagreement against the BIOMASS bias index, Spearman 0.15. Results: results/summary.json.",
+        "confidenceLevel": "https://w3id.org/sciencelive/o/terms/Moderate",
+        "limitations": "One region and one BIOMASS season (April to August 2026, Level-2A, processors 4.4.4 and 4.4.5 mixed during reprocessing); the products are early and may change. GEDI footprints span 2019 to 2025, so the two heights are years apart; cells burned in 2024 are excluded but later disturbance is not. GEDI RH98 is a lidar energy percentile over 25 m footprints and BIOMASS forest height is an upper-canopy stand height (H100) from radar at 200 m, so part of the difference is definitional; GEDI is itself a satellite product, and no open field-plot heights exist in the region for an independent check. BIOMASS also reports non-zero heights over grassland, and one of 18 products was excluded for reporting about 30 m over grassland. The breakdown by thirds of GEDI height is affected by regression to the mean. The forest focus group uses a 50 percent tree-cover threshold that is our choice."
+      },
+      "provenance": {
+        "outcome": "nanopubs/drafts/05_outcome.md",
+        "label": "nanopubs/drafts/05_outcome.md",
+        "date": "CITATION.cff",
+        "validationStatus": "nanopubs/drafts/05_outcome.md",
+        "conclusion": "nanopubs/drafts/05_outcome.md",
+        "evidence": "nanopubs/drafts/05_outcome.md",
+        "confidenceLevel": "nanopubs/drafts/05_outcome.md",
+        "limitations": "nanopubs/drafts/05_outcome.md"
+      },
+      "manual": [
+        "validationStatus",
+        "confidenceLevel"
+      ],
+      "published_uri": null
+    },
+    {
+      "step": "06_citation",
+      "template_key": "CITATION_CITO",
+      "template_uri": "https://w3id.org/np/RA43F9EoOuzF0xoNUnCMNyFsfIqlsuWDdPHCnN0wCdCAw",
+      "prefill": {
+        "st02": [
+          {
+            "cites": "http://purl.org/spar/cito/qualifies",
+            "cited": "https://doi.org/10.1038/s41559-021-01451-x"
+          }
+        ]
+      },
+      "provenance": {
+        "st02": "cites = validation status (see 05_outcome); cited = CITATION.cff references[article]"
+      },
+      "published_uri": null
+    }
+  ],
+  "carry_forward": [
+    {
+      "from": "01_pico",
+      "into": "02_aida",
+      "field": "project"
+    },
+    {
+      "from": "02_aida",
+      "into": "03_claim",
+      "field": "aida"
+    },
+    {
+      "from": "03_claim",
+      "into": "04_study",
+      "field": "claim"
+    },
+    {
+      "from": "04_study",
+      "into": "05_outcome",
+      "field": "study"
+    },
+    {
+      "from": "05_outcome",
+      "into": "06_citation",
+      "field": "work"
+    }
+  ]
+}

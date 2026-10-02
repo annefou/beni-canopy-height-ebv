@@ -12,7 +12,7 @@
 URI of the Outcome published in step 05. Pull from `nanopubs/PUBLISHED.md`.
 
 ```
-
+«URI of step 05 (FORRT Replication Outcome)»
 ```
 
 ### List citations (repeatable group, required ≥1)
@@ -31,8 +31,10 @@ For question-rooted chains where there is no original paper to confirm/dispute, 
 
 > **Note:** `replicates` is NOT in the Science Live dropdown (despite existing in upstream CiTO). When citing a notebook/tutorial that was directly reused, use **`credits`** instead.
 
-```
+Question-rooted chain: Skidmore et al. 2021 is not confirmed or qualified here; it is the authority for vegetation height as a satellite biodiversity product (Table 2, no. 14). **Set this by hand in the wizard:** `scripts/build_chain_draft.py` derives the type from the validation status and would pre-fill `qualifies`.
 
+```
+cites as authority
 ```
 
 ##### DOI or other URL of the cited work (text input)
@@ -45,7 +47,10 @@ https://doi.org/10.1038/s41559-021-01451-x
 
 If the Outcome cites methods papers, related replications, or upstream tools, add them here.
 
-- _Type: ___ → URL: ___
+- Type: cites as authority → URL: https://doi.org/10.1016/j.tree.2020.03.006 (Valbuena et al. 2020: definition of ecosystem height, cover and structural complexity used for the EBV components)
+- Type: cites as authority → URL: https://doi.org/10.1126/science.1229931 (Pereira et al. 2013: Essential Biodiversity Variables)
+- Type: uses data from → URL: https://doi.org/10.57780/bio-65e97bc (ESA BIOMASS Level 2A)
+- Type: uses data from → URL: https://doi.org/10.5067/GEDI/GEDI02_A.003 (GEDI L2A V003)
 
 ## Publication note
 

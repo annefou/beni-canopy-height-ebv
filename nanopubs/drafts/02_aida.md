@@ -14,7 +14,7 @@ Atomic, Independent, Declarative, Absolute. One empirical finding. Must end with
 > _If your draft AIDA contains "and" linking two distinct findings, split into two AIDA nanopubs._
 
 ```
-
+Forest canopy height estimated by the ESA BIOMASS radar mission is lower than forest canopy height measured by spaceborne lidar in the lowland forests of the Bolivian Beni.
 ```
 
 <!-- field: topic -->
@@ -23,7 +23,10 @@ Atomic, Independent, Declarative, Absolute. One empirical finding. Must end with
 Predefined topic vocabulary — list the labels you intend to pick from the dropdown.
 
 ```
-
+forest canopy (Q105427924)
+remote sensing (Q199687)
+lidar (Q504027)
+synthetic aperture radar (Q740686)
 ```
 
 <!-- field: project -->
@@ -37,7 +40,7 @@ URI of the nanopub the AIDA derives from.
 Pull the URI from `nanopubs/PUBLISHED.md`.
 
 ```
-
+«URI of step 01 (PICO Research Question)»
 ```
 
 <!-- field: dataset -->
@@ -45,8 +48,9 @@ Pull the URI from `nanopubs/PUBLISHED.md`.
 
 DOIs/URLs of datasets that ground the AIDA claim.
 
-- _DOI 1: ___
-- _DOI 2: ___
+- DOI 1: https://doi.org/10.57780/bio-65e97bc (ESA BIOMASS Level 2A)
+- DOI 2: https://doi.org/10.5067/GEDI/GEDI02_A.003 (GEDI L2A V003)
+- DOI 3: https://doi.org/10.5281/zenodo.7254221 (ESA WorldCover 10 m 2021 v200, forest focus group)
 
 <!-- field: publication -->
 ### Supported by other publications (text input, optional)

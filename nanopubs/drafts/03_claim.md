@@ -12,7 +12,7 @@
 Slug becomes part of the nanopub URI. Use kebab-case.
 
 ```
-
+beni-biomass-forest-height-below-gedi
 ```
 
 <!-- field: label -->
@@ -21,7 +21,7 @@ Slug becomes part of the nanopub URI. Use kebab-case.
 A descriptive title (not a sentence). Used for searches/discovery.
 
 ```
-
+ESA BIOMASS forest height lower than spaceborne-lidar canopy height, Beni lowland forests
 ```
 
 <!-- field: aida -->
@@ -32,7 +32,7 @@ URI of the AIDA published in step 02. Pull from `nanopubs/PUBLISHED.md`.
 > _If the AIDA was published via Nanodash (`w3id.org/np/...` namespace), the platform's search may not find it — paste the URI manually._
 
 ```
-
+«URI of step 02 (AIDA sentence)»
 ```
 
 <!-- field: forrtType -->
@@ -42,7 +42,7 @@ Pick one. See `docs/claim-type-vocabulary.md` for the seven options and how to c
 
 - [ ] computational performance (Computational & Performance)
 - [ ] data governance (access control, licensing, FAIR compliance)
-- [ ] data quality (preprocessing, validation, normalization)
+- [x] data quality (preprocessing, validation, normalization)
 - [ ] descriptive pattern (distribution, trend, proportion)
 - [ ] model performance (accuracy, F1 score, evaluation metrics)
 - [ ] scalability (Computational & Performance)
@@ -53,8 +53,9 @@ Pick one. See `docs/claim-type-vocabulary.md` for the seven options and how to c
 
 Full URL form: `https://doi.org/...` (NOT bare DOI).
 
+*(skip — optional)* The claim originates in this study, not in a source publication; Skidmore et al. 2021 is cited at the CiTO step.
+
 ```
-https://doi.org/10.1038/s41559-021-01451-x
 ```
 
 ## Publication note
