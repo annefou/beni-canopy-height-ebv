@@ -180,6 +180,8 @@ bio = pd.DataFrame({
     "fh": g.apply(lambda d: np.average(d["fh"], weights=d["w"]), include_groups=False),
     "bias": g.apply(lambda d: np.average(d["bias"], weights=d["w"]), include_groups=False),
     "fh_within_std": g.apply(lambda d: np.average(d["fh_within_std"], weights=d["w"]), include_groups=False),
+    # sensitivity check: passes weighted by pixel count only, without ESA's 1/(0.01 + bias) weight
+    "fh_unweighted": g.apply(lambda d: np.average(d["fh"], weights=d["n_px"]), include_groups=False),
     "fh_between_pass_std": g["fh"].std(ddof=0),
     "n_passes": g.size(),
 })
@@ -311,6 +313,10 @@ ds = xr.Dataset(
             "statistic": "per pass: area-weighted cell mean; across passes: weighted mean, weights pixel_count/(0.01+bias)",
             "cell_methods": "area: mean", "ancillary_variables": "biomass_fh_bias biomass_n_passes",
             "source": "ESA BIOMASS L2A FP_FH__L2A via ESA MAAP (collection BiomassLevel2a)"}),
+        "biomass_forest_height_unweighted": var("fh_unweighted", {
+            "standard_name": "canopy_height", "units": "m",
+            "long_name": "BIOMASS forest height (H100), passes weighted by pixel count only (sensitivity check)",
+            "definition": FH_DEF, "cell_methods": "area: mean"}),
         "biomass_fh_bias": var("bias", {
             "units": "percent", "long_name": "BIOMASS forest-height inversion bias (quality index)",
             "definition": BIAS_DEF, "comment": NO_STD, "statistic": "same weighting as biomass_forest_height"}),

@@ -116,6 +116,38 @@ relation = {"intercept_m": float(fit.intercept), "slope": float(fit.slope), "r2_
 print(json.dumps(relation, indent=1))
 
 # %% [markdown]
+# ## 3b. Sensitivity: combining BIOMASS passes without the bias weight
+#
+# ESA's weight 1/(0.01 + bias) lets a pass with a very small bias index dominate the cells it overlaps. Since the
+# bias index predicts disagreement with GEDI only weakly (section 2), the same comparison is repeated with passes
+# weighted by pixel count only, on the same cells.
+
+# %%
+def relation_cv(x: pd.Series, y: pd.Series) -> dict:
+    pred = pd.Series(np.nan, index=x.index)
+    for k in range(5):
+        tr, te = cal["fold"] != k, cal["fold"] == k
+        f = stats.linregress(x[tr], y[tr])
+        pred[te] = f.intercept + f.slope * x[te]
+    f = stats.linregress(x, y)
+    return {"intercept_m": float(f.intercept), "slope": float(f.slope),
+            "cv_rmse_m": float(np.sqrt(((y - pred) ** 2).mean()))}
+
+
+sensitivity = {
+    "esa_bias_weighted": {**agreement(cal["biomass_forest_height"], cal["gedi_rh98"]),
+                          **relation_cv(cal["biomass_forest_height"], cal["gedi_rh98"])},
+    "pixel_count_weighted": {**agreement(cal["biomass_forest_height_unweighted"], cal["gedi_rh98"]),
+                             **relation_cv(cal["biomass_forest_height_unweighted"], cal["gedi_rh98"])},
+}
+multi = cal["biomass_n_passes"] >= 2
+sensitivity["cells_with_2plus_passes"] = int(multi.sum())
+sensitivity["median_abs_change_m_where_2plus_passes"] = float(
+    (cal.loc[multi, "biomass_forest_height"] - cal.loc[multi, "biomass_forest_height_unweighted"]).abs().median())
+print(pd.DataFrame({k: v for k, v in sensitivity.items() if isinstance(v, dict)}).round(3).to_string())
+print({k: v for k, v in sensitivity.items() if not isinstance(v, dict)})
+
+# %% [markdown]
 # ## 4. The EBV dataset
 #
 # Forest cells only (the ecosystem focus group). Per cell:
@@ -212,6 +244,7 @@ summary = {"agreement_all_shots": agree, "agreement_night_shots": agree_night,
            "bias_index_vs_disagreement": {"spearman": float(rho_bias.statistic), "p": float(rho_bias.pvalue),
                                           "by_tercile": by_bias.reset_index().astype({"bias_tercile": str}).to_dict("records")},
            "height_relation": relation,
+           "sensitivity_pass_weighting": sensitivity,
            "ebv_cells": {"forest": int(len(F)), "height": has("biomass_forest_height"), "height_gedi": has("gedi_rh98"),
                          "cover": has("gedi_cover"), "complexity_cv": has("biomass_fh_within_cell_cv"),
                          "complexity_fhd": has("gedi_fhd_normal"),
