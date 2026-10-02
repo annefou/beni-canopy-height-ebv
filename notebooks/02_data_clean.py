@@ -83,6 +83,7 @@ tc = bin_to_cells(wc.tree_cover_fraction.values.astype("float64"), wc.lon.values
 tree = pd.Series(tc.mean, index=pd.Index(tc.cell_ids, name="cell_id"), name="tree_cover_fraction")
 
 
+NONFOREST_MAX_M = 20.0  # product exclusion: median height on non-forest pixels above this
 MIN_FOREST_PX = 25  # BIOMASS pixels are posted every ~90 m: 25 pixels is ~0.2 km2 of forest in a ~10 km2 cell
 
 
@@ -109,9 +110,15 @@ print(f"{(tree >= FOREST_MIN).mean()*100:.0f} % of cells are at least {FOREST_MI
 # Only forest pixels enter the height (focus group above); whether a cell is fully covered by the swath is judged
 # on all valid pixels, and a cell needs at least `MIN_FOREST_PX` forest pixels in a pass.
 #
-# One product-level exclusion rule: a product whose **median bias is below 1 %** is set aside as suspect, since a
-# whole inversion with near-zero bias is implausible. To make the rule checkable, the table below also gives each
-# product's median height on clearly non-forest pixels (tree cover < 20 %), which should be close to zero.
+# One product-level exclusion rule, based on what must hold physically: a product is excluded when its **median
+# height on clearly non-forest pixels** (WorldCover tree cover < 20 %, mostly grassland and savanna) is above
+# `NONFOREST_MAX_M` = 20 m, i.e. when it reports tall canopy where there is none. The 20 m limit is our choice;
+# for these products any limit between about 10 m and 29 m gives the same decisions.
+#
+# An earlier rule ("median bias below 1 %", used in the ESA Frontiers `beni-pipeline`) is shown for comparison in
+# `excluded_by_bias_rule`. It removed two passes of 2026-07-25: one is clearly failed (about 30 m on forest and on
+# grassland alike), the other is plausible (about 20 m on forest, 8 m on grassland). The BIOMASS bias index
+# itself is kept and used to weight passes, as ESA does.
 
 # %%
 def clipped_bbox(path: Path) -> tuple[float, float, float, float]:
@@ -140,7 +147,8 @@ for it in items:
            "median_bias_pct": round(med_bias, 2),
            "median_height_forest_px_m": round(float(np.nanmedian(fh.values[tf >= FOREST_MIN])), 1),
            "median_height_nonforest_px_m": round(float(np.nanmedian(fh.values[tf < 0.2])), 1),
-           "excluded": med_bias < 1.0}
+           "excluded_by_bias_rule": med_bias < 1.0}
+    rec["excluded"] = rec["median_height_nonforest_px_m"] > NONFOREST_MAX_M
     products.append(rec)
     if rec["excluded"]:
         continue
@@ -161,7 +169,8 @@ for it in items:
                                   "fh_within_std": s_fh.std[full], "n_px": s_fh.pixel_count[full],
                                   "start": it["start"]}))
 products = pd.DataFrame(products)
-print(products[["start", "median_bias_pct", "median_height_forest_px_m", "median_height_nonforest_px_m", "excluded"]].to_string())
+print(products[["start", "median_bias_pct", "median_height_forest_px_m", "median_height_nonforest_px_m",
+                "excluded_by_bias_rule", "excluded"]].to_string())
 
 # %%
 p = pd.concat(per_pass, ignore_index=True)
