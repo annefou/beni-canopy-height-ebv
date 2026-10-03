@@ -3,8 +3,8 @@
   "kind": "forrt-chain-draft",
   "chain_shape": "pico",
   "source": {
-    "repository": "https://github.com/OWNER/beni-canopy-height-ebv",
-    "commit": "011b7265a18913db1f1917f7738c0198c3be9d91",
+    "repository": "https://github.com/annefou/beni-canopy-height-ebv",
+    "commit": "5c1f9dafe74f5b3af90be4a3688b4ed16ce90bb8",
     "figure": "figures/main_result.png"
   },
   "steps": [
@@ -161,7 +161,8 @@
       "prefill": {
         "outcome": "beni-biomass-gedi-forest-height-outcome",
         "label": "ESA BIOMASS forest height is lower than GEDI lidar canopy height in most Beni lowland forest, but not in low canopies",
-        "date": "2026-10-01",
+        "repo": "https://doi.org/10.5281/zenodo.23120435",
+        "date": "2026-10-03",
         "validationStatus": "https://w3id.org/sciencelive/o/terms/PartiallySupported",
         "conclusion": "Partially supported. Across Beni lowland forest, ESA BIOMASS forest height is lower than GEDI lidar canopy height on average (mean difference -3.0 m, 95 percent block-bootstrap interval -4.4 to -1.1 m) and in 78 percent of forest cells, so the claim holds for most of the forest. It does not hold for low canopies: where GEDI canopy height is lowest (median 10.4 m), BIOMASS is on average 2.1 m higher. BIOMASS compresses the height range: the fitted relation crosses the 1:1 line near 24 m of BIOMASS height. The two heights rank forests only moderately consistently. BIOMASS forest height in its first year is therefore usable for the EBV Ecosystem Vertical Profile only with a stated uncertainty of several metres.",
         "evidence": "Comparison on 1900 forest cells (HEALPix depth 11, WorldCover tree cover at least 50 percent, at least 5 GEDI footprints, at most 5 percent burned in 2024). BIOMASS minus GEDI RH98: mean -3.03 m (95 percent spatial block-bootstrap interval -4.39 to -1.06 m), median -3.83 m, root-mean-square difference 7.18 m; BIOMASS lower in 77.7 percent of cells. Spearman rank correlation 0.58, Pearson 0.52. By thirds of GEDI height (medians 10.4, 19.5, 25.6 m): mean difference +2.1, -4.6, -6.6 m; BIOMASS lower in 48, 87, 97 percent of cells. Linear relation GEDI = 8.61 + 0.645 x BIOMASS, in-sample R2 0.27, cross-validated error 6.59 m (5-fold, 42 spatial blocks). Checks: night-time footprints only, mean difference -2.91 m and Spearman 0.58 (1832 cells); passes combined without the bias weight, mean difference -3.35 m and Spearman 0.59; disagreement against the BIOMASS bias index, Spearman 0.15. Results: results/summary.json.",
@@ -171,6 +172,7 @@
       "provenance": {
         "outcome": "nanopubs/drafts/05_outcome.md",
         "label": "nanopubs/drafts/05_outcome.md",
+        "repo": "CITATION.cff",
         "date": "CITATION.cff",
         "validationStatus": "nanopubs/drafts/05_outcome.md",
         "conclusion": "nanopubs/drafts/05_outcome.md",
