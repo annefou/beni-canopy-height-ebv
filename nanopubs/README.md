@@ -17,6 +17,7 @@ A complete FORRT chain is six steps published in order. **Step 1 has three alter
 | 5 | `drafts/05_outcome.md` | FORRT Replication Outcome |
 | 6 | `drafts/06_citation.md` | CiTO Citation |
 | 9 (optional, spatial papers) | `drafts/09_geo_coverage.md` | Document geographical coverage |
+| 10 (optional, data-producing work) | `drafts/10_dataset.md` | FAIR Dataset |
 
 Once the chain shape is decided, delete the two step-1 alternatives you aren't using:
 
@@ -59,10 +60,12 @@ Don't try to publish out of order. Don't forget to update `PUBLISHED.md` as you 
 
 ## Optional layers
 
-Once the six-step chain is published, two optional further nanopubs may apply:
+Once the six-step chain is published, further optional nanopubs may apply:
 
 - **Research Software** — when the repo *produces* a reusable software artefact (an upstream library, not a one-off demo). Cites back to the FORRT Claim URI as `Research Project`. Drafted in `drafts/07_research_software.md`. See `docs/forrt-form-fields.md` § Research Software and `CLAUDE.md` § Layered architecture: FORRT vs Research Software.
 - **Research Synthesis** — when this chain is one of several testing facets of a shared underlying property. Drafted in `drafts/08_synthesis.md`. See `docs/forrt-form-fields.md` § Research Synthesis.
+- **Geographical coverage** — when the claim is bounded by geography. Drafted in `drafts/09_geo_coverage.md`. Publishes `dct:spatial`, which is what the platform's Geographic browse tab reads. Note it attaches to a **DOI**, not to a nanopub URI, so it does not appear as a step of the chain.
+- **Dataset** — when the work *produces* reusable data at a persistent identifier, as opposed to merely consuming it. Drafted in `drafts/10_dataset.md`. Set its *project* field to the step 01 URI: that reference is what attaches it to the chain.
 
 ## After publishing
 

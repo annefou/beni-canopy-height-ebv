@@ -19,6 +19,8 @@ This file is the canonical registry of published nanopub URIs for this replicati
 |---|---|---|---|
 | 07 | Research Software (if applicable) | _not applicable_ | |
 | 08 | Research Synthesis (if applicable) | _not applicable_ | |
+| 09 | Geographical Coverage (spatial papers) | _not yet published_ | |
+| 10 | Dataset (FAIR digital object) | _not yet published_ | |
 
 ## Format
 
