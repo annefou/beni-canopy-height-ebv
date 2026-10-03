@@ -1,1 +1,1 @@
-https://platform.sciencelive4all.org/np/create/chain?draft=https://raw.githubusercontent.com/annefou/beni-canopy-height-ebv/main/nanopubs/chain-draft.json
+https://platform.sciencelive4all.org/np/create/chain?draft=https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Fannefou%2Fbeni-canopy-height-ebv%40a17ba2bacde095c0f53a9f38a2bcdb9b740aa69a%2Fnanopubs%2Fchain-draft.json
