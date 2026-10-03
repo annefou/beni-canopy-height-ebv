@@ -51,7 +51,7 @@ with the exact wording in the dataset description or the paper if one is written
 later — the quotation should be verbatim, not paraphrased.
 
 ```
-Canopy height is estimated for the lowland forests of the Beni Department, Bolivia, from ESA BIOMASS P-band radar and validated against NASA GEDI spaceborne lidar.
+Canopy height is estimated for the lowland forests of the Beni, Bolivia, between 67.5°W–64.5°W and 15.5°S–12.5°S, from ESA BIOMASS P-band radar and validated against NASA GEDI spaceborne lidar.
 ```
 
 <!-- field: location -->
@@ -75,18 +75,23 @@ Beni lowlands, Bolivia
 <!-- field: wkt -->
 ### Well-Known Text geometry (long text, optional — but it is what enables spatial queries)
 
-**Approximate, department-level extent — replace before publishing.** The
-polygon below is the bounding extent of the Beni Department, not the analysis
-footprint. Use the actual extent of the BIOMASS/GEDI comparison (the bounds of
-the raster tiles or the AOI shapefile used in the notebook), so the map claims
-exactly the area the result covers and no more.
+This is the **analysis footprint**, not the Beni Department outline: the box the
+pipeline actually reads, so the map claims the area the result covers and no
+more. It is `BBOX = (-67.5, -15.5, -64.5, -12.5)` in `notebooks/02_data_clean.py`
+and `notebooks/04_figures.py`, and the same four numbers are recorded in the
+data itself as `region_bbox_lonlat` in
+`data/clean/beni_canopy_height.zarr/measurements/canopy_height/11/zarr.json`.
 
 Coordinate order is `longitude latitude`, and the ring must close (first pair
 repeated last).
 
 ```
-POLYGON((-69.5 -15.5, -62.0 -15.5, -62.0 -10.0, -69.5 -10.0, -69.5 -15.5))
+POLYGON((-67.5 -15.5, -64.5 -15.5, -64.5 -12.5, -67.5 -12.5, -67.5 -15.5))
 ```
+
+> If the pipeline's `BBOX` is ever widened, this nanopub does not follow — it is
+> signed and immutable. Publish a new coverage and supersede this one, the same
+> as for any other corrected statement.
 
 <!-- field: bbox -->
 ### Bounding box as WKT POLYGON (long text, optional)
