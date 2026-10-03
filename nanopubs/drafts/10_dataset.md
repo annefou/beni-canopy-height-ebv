@@ -22,13 +22,22 @@
 <!-- field: fdo -->
 ### Dataset Identifier (text input, required)
 
-The persistent identifier of the dataset, full URL form. This is the same
-identifier step 06 cites as `usesDataFrom`, so the two records agree on what
-the data is.
+The DOI of the dataset, in bare form — no `https://doi.org/` resolver prefix.
+This is the same dataset step 06 cites as `usesDataFrom`.
 
 ```
-https://doi.org/10.57780/bio-65e97bc
+10.57780/bio-65e97bc
 ```
+
+> **Check what the platform mints from this.** The template declares `fdo` as
+> `nt:LocalResource, nt:UriPlaceholder` labelled *"full URI (e.g. handle.net) or
+> short suffix"*, and the form offers no separate access-URL field. A bare DOI is
+> therefore read as a **suffix**, so the dataset resource is given a URI inside
+> the nanopublication's own namespace rather than being identified by the DOI.
+> If the published TriG shows the dataset as `…/np/RA…/10.57780/bio-65e97bc`
+> rather than as the DOI, this record and step 06's
+> `usesDataFrom <https://doi.org/10.57780/bio-65e97bc>` are describing two
+> different resources, and nothing links them.
 
 <!-- field: label -->
 ### Dataset Title (text input, required, 3–300 chars)
@@ -61,11 +70,17 @@ Essential Biodiversity Variables — Ecosystem Vertical Profile (GEO BON)
 <!-- field: creators -->
 ### Creators (repeatable, ORCID URLs)
 
-The ORCID the rest of this chain is attributed to. Add co-creators of the data
-product if they differ from the chain's author.
+**Not the author of this chain.** The creators are whoever produced the dataset
+— the team behind the canopy-height product — which is a different credit from
+having published the replication study that uses it. Getting this wrong assigns
+someone else's data to you in a signed, permanent record.
+
+If you contributed to the chain but not to the data, you belong in
+*Contributors* or nowhere in this nanopub at all; your authorship of the study
+is already recorded in steps 01–06.
 
 ```
-https://orcid.org/0000-0002-1784-2920
+{{CREATOR_ORCIDS — the dataset's own creator(s), one per row}}
 ```
 
 <!-- field: project -->
