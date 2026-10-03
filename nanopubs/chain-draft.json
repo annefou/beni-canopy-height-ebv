@@ -35,7 +35,7 @@
       "manual": [
         "type"
       ],
-      "published_uri": null
+      "published_uri": "https://w3id.org/sciencelive/np/RAzN11guB556AYHGiB9B_YMoS8d0TDPL0Jw1tfU4KFNhc"
     },
     {
       "step": "02_aida",
@@ -78,7 +78,7 @@
         "topic": "nanopubs/drafts/02_aida.md + Wikidata",
         "st3": "nanopubs/drafts/02_aida.md"
       },
-      "published_uri": null
+      "published_uri": "https://w3id.org/sciencelive/np/RABKbzjboH2Y3BfjJTxqtm8vCQmOMb5ASNoXBBb0w5cBI"
     },
     {
       "step": "03_claim",
@@ -99,7 +99,7 @@
       "manual": [
         "forrtType"
       ],
-      "published_uri": null
+      "published_uri": "https://w3id.org/sciencelive/np/RAtnR5Ow_ZxLDM91r3Wrq2ICY_9g35P16dQrjO1NnGd9I"
     },
     {
       "step": "04_study",
@@ -152,7 +152,7 @@
       "manual": [
         "type"
       ],
-      "published_uri": null
+      "published_uri": "https://w3id.org/sciencelive/np/RAcqXoAGeUnb9p0yakR1lohrkZA4wn2ksre3sXvXvQ548"
     },
     {
       "step": "05_outcome",
@@ -184,7 +184,7 @@
         "validationStatus",
         "confidenceLevel"
       ],
-      "published_uri": null
+      "published_uri": "https://w3id.org/sciencelive/np/RATzUuXp99cKkSbXG2Eu_G4mQFSY0VMc1Kar0iRCQN1kk"
     },
     {
       "step": "06_citation",
@@ -217,6 +217,35 @@
       "provenance": {
         "st02": "cites = nanopubs/drafts/06_citation.md; cited = CITATION.cff references[article]; further rows = nanopubs/drafts/06_citation.md"
       },
+      "published_uri": "https://w3id.org/sciencelive/np/RAserag18w54KBVz9IimOd6MXZQK3-DFmV23QtAPkrj1Q"
+    },
+    {
+      "step": "10_dataset",
+      "template_key": "DATASET",
+      "template_uri": "https://w3id.org/np/RAuVB37yyAuAlgusrUAoG84JI4_EfrEqIkpEZYDpSz3d8",
+      "prefill": {
+        "fdo": "https://doi.org/10.57780/bio-65e97bc",
+        "label": "Canopy height for the Beni lowlands, Bolivia: an Ecosystem Vertical Profile EBV from ESA BIOMASS, validated against GEDI lidar",
+        "description": "Forest canopy height for the lowland forests of the Beni Department, Bolivia, derived from ESA BIOMASS P-band synthetic aperture radar and validated against NASA GEDI spaceborne lidar (GEDI L2A, https://doi.org/10.5067/GEDI/GEDI02_A.003). The product is published as an Essential Biodiversity Variable of the GEO BON class Ecosystem Vertical Profile: canopy height is the vertical structure measurement that class is defined on. The study is question-rooted - it asks how BIOMASS-derived height compares with lidar-derived height in a seasonally flooded, structurally heterogeneous landscape - rather than replicating a prior paper. Skidmore et al. 2021 (https://doi.org/10.1038/s41559-021-01451-x) is the foundation reference for vegetation height as a satellite-observed biodiversity product, and is cited as an authority rather than as a work this dataset confirms or disputes.",
+        "domain": "Essential Biodiversity Variables - Ecosystem Vertical Profile (GEO BON)",
+        "creators": [
+          "https://orcid.org/0000-0002-1784-2920"
+        ]
+      },
+      "provenance": {
+        "fdo": "nanopubs/drafts/10_dataset.md (same identifier step 06 cites as usesDataFrom)",
+        "label": "nanopubs/drafts/10_dataset.md",
+        "description": "nanopubs/drafts/10_dataset.md",
+        "domain": "nanopubs/drafts/10_dataset.md",
+        "creators": "chain provenance (prov:wasAttributedTo on steps 01-06)",
+        "project": "carried from 01_pico - the reference that attaches the dataset to the constellation"
+      },
+      "manual": [
+        "version",
+        "contactEmail",
+        "publisher",
+        "funder"
+      ],
       "published_uri": null
     }
   ],
@@ -245,6 +274,11 @@
       "from": "05_outcome",
       "into": "06_citation",
       "field": "work"
+    },
+    {
+      "from": "01_pico",
+      "into": "10_dataset",
+      "field": "project"
     }
   ]
 }
