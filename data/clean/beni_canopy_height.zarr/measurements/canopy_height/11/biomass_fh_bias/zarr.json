@@ -1,0 +1,52 @@
+{
+  "shape": [
+    10205
+  ],
+  "data_type": "float32",
+  "chunk_grid": {
+    "name": "regular",
+    "configuration": {
+      "chunk_shape": [
+        10205
+      ]
+    }
+  },
+  "chunk_key_encoding": {
+    "name": "default",
+    "configuration": {
+      "separator": "/"
+    }
+  },
+  "fill_value": "NaN",
+  "codecs": [
+    {
+      "name": "bytes",
+      "configuration": {
+        "endian": "little"
+      }
+    },
+    {
+      "name": "zstd",
+      "configuration": {
+        "level": 0,
+        "checksum": false
+      }
+    }
+  ],
+  "attributes": {
+    "units": "percent",
+    "long_name": "BIOMASS forest-height inversion bias (quality index)",
+    "definition": "BIOMASS L2A forest height quality: 'a percentage bias value for each of the Forest Height image pixel, indicating the inversion performance' (Format Specification v3.4.0, sec. 4.2); computed as |k_hb - k_h| / k_h * 100 (ATBD eq. 3.22). Lower is better.",
+    "comment": "No CF standard name exists for this quantity (CF standard name table v95).",
+    "statistic": "same weighting as biomass_forest_height",
+    "grid_mapping": "crs",
+    "coordinates": "cell_ids",
+    "_FillValue": "AAAAAAAA+H8="
+  },
+  "dimension_names": [
+    "cells"
+  ],
+  "zarr_format": 3,
+  "node_type": "array",
+  "storage_transformers": []
+}

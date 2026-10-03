@@ -1,0 +1,52 @@
+{
+  "shape": [
+    10205
+  ],
+  "data_type": "float32",
+  "chunk_grid": {
+    "name": "regular",
+    "configuration": {
+      "chunk_shape": [
+        10205
+      ]
+    }
+  },
+  "chunk_key_encoding": {
+    "name": "default",
+    "configuration": {
+      "separator": "/"
+    }
+  },
+  "fill_value": "NaN",
+  "codecs": [
+    {
+      "name": "bytes",
+      "configuration": {
+        "endian": "little"
+      }
+    },
+    {
+      "name": "zstd",
+      "configuration": {
+        "level": 0,
+        "checksum": false
+      }
+    }
+  ],
+  "attributes": {
+    "standard_name": "burned_area_fraction",
+    "units": "1",
+    "cell_methods": "area: mean time: maximum",
+    "long_name": "share of observed, burnable 300 m pixels burned at least once in 2024",
+    "source": "ESA Fire_cci SYN burned area pixel v1.1 doi:10.5285/d441079fc77f49fabeb41330612b252f",
+    "grid_mapping": "crs",
+    "coordinates": "cell_ids",
+    "_FillValue": "AAAAAAAA+H8="
+  },
+  "dimension_names": [
+    "cells"
+  ],
+  "zarr_format": 3,
+  "node_type": "array",
+  "storage_transformers": []
+}

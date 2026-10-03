@@ -1,0 +1,54 @@
+{
+  "shape": [
+    4386
+  ],
+  "data_type": "float32",
+  "chunk_grid": {
+    "name": "regular",
+    "configuration": {
+      "chunk_shape": [
+        4386
+      ]
+    }
+  },
+  "chunk_key_encoding": {
+    "name": "default",
+    "configuration": {
+      "separator": "/"
+    }
+  },
+  "fill_value": "NaN",
+  "codecs": [
+    {
+      "name": "bytes",
+      "configuration": {
+        "endian": "little"
+      }
+    },
+    {
+      "name": "zstd",
+      "configuration": {
+        "level": 0,
+        "checksum": false
+      }
+    }
+  ],
+  "attributes": {
+    "standard_name": "canopy_height",
+    "units": "m",
+    "long_name": "ecosystem height (top of canopy height)",
+    "ebv_component": "ecosystem height (Valbuena et al. 2020)",
+    "definition": "BIOMASS L2A forest height: 'forest upper canopy height (H100 Standard)' (BIOMASS Forest Height ATBD BIO-BPS-FH-ATBD-ARE-10343 v2.2.0, 2026-03-13, sec. 3.5.1); 'Top Canopy Height (TCH)' (BIOMASS Forest Height Products Format Specification BIO-BPS-FHPFD-ARE-010256 v3.4.0, sec. 4.2)",
+    "time_coverage": "BIOMASS: 2026-04-26, 2026-05-17, 2026-06-07, 2026-07-07, 2026-07-25, 2026-07-28, 2026-08-18",
+    "ancillary_variables": "ecosystem_height_uncertainty biomass_n_passes",
+    "grid_mapping": "crs",
+    "coordinates": "cell_ids",
+    "_FillValue": "AAAAAAAA+H8="
+  },
+  "dimension_names": [
+    "cells"
+  ],
+  "zarr_format": 3,
+  "node_type": "array",
+  "storage_transformers": []
+}

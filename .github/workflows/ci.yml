@@ -23,9 +23,12 @@ on:
 # To enable one: uncomment `env:` and the line(s) you need here, and the
 # matching step further down.
 #
-# env:
-#   COPERNICUS_CREDENTIALS_BASE64: ${{ secrets.COPERNICUS_CREDENTIALS_BASE64 }}
-#   CDSAPI_KEY: ${{ secrets.CDSAPI_KEY }}
+# This study: step 01 needs an ESA MAAP offline token and a NASA Earthdata login, and its GEDI
+# download takes hours. Without these secrets, CI runs 03-04 from the committed per-cell store.
+env:
+  MAAP_OFFLINE_TOKEN: ${{ secrets.MAAP_OFFLINE_TOKEN }}
+  EARTHDATA_USERNAME: ${{ secrets.EARTHDATA_USERNAME }}
+  EARTHDATA_PASSWORD: ${{ secrets.EARTHDATA_PASSWORD }}
 
 jobs:
   # Unit tests for scripts/. Deliberately NOT gated on check-ready: these test
@@ -98,7 +101,14 @@ jobs:
 
       - name: Run pipeline
         if: steps.guard.outputs.ready == 'true'
-        run: pixi run snakemake --cores 1
+        run: |
+          if [ -n "${MAAP_OFFLINE_TOKEN}" ] && [ -n "${EARTHDATA_USERNAME}" ]; then
+            pixi run snakemake --cores 1
+          else
+            echo "::notice::No ESA MAAP / NASA Earthdata secrets: steps 01-02 skipped; 03-04 run from the committed per-cell store data/clean/beni_canopy_height.zarr."
+            cd notebooks
+            for nb in 03_analysis 04_figures; do pixi run jupytext --to notebook --execute "$nb.py"; done
+          fi
 
       - name: Upload results
         if: always() && steps.guard.outputs.ready == 'true'

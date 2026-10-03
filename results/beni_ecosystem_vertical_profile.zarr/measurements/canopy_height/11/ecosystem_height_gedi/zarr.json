@@ -1,0 +1,53 @@
+{
+  "shape": [
+    4386
+  ],
+  "data_type": "float32",
+  "chunk_grid": {
+    "name": "regular",
+    "configuration": {
+      "chunk_shape": [
+        4386
+      ]
+    }
+  },
+  "chunk_key_encoding": {
+    "name": "default",
+    "configuration": {
+      "separator": "/"
+    }
+  },
+  "fill_value": "NaN",
+  "codecs": [
+    {
+      "name": "bytes",
+      "configuration": {
+        "endian": "little"
+      }
+    },
+    {
+      "name": "zstd",
+      "configuration": {
+        "level": 0,
+        "checksum": false
+      }
+    }
+  ],
+  "attributes": {
+    "standard_name": "canopy_height",
+    "units": "m",
+    "long_name": "ecosystem height, independent estimate (GEDI RH98)",
+    "ebv_component": "ecosystem height (Valbuena et al. 2020)",
+    "definition": "GEDI L2A V003 rh: 'Relative height metrics at 1 % interval' (GEDI L2A V3 product data dictionary); RH100 = elev_highestreturn - elev_lowestmode (GEDI L2 User Guide V2.1). rh98 is the height above the lowest mode at which 98 % of the returned waveform energy is reached.",
+    "time_coverage": "GEDI V003: 2019-04-05 to 2025-07-09 (kept footprints)",
+    "grid_mapping": "crs",
+    "coordinates": "cell_ids",
+    "_FillValue": "AAAAAAAA+H8="
+  },
+  "dimension_names": [
+    "cells"
+  ],
+  "zarr_format": 3,
+  "node_type": "array",
+  "storage_transformers": []
+}

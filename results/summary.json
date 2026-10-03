@@ -1,0 +1,122 @@
+{
+ "agreement_all_shots": {
+  "n_cells": 1900,
+  "mean_difference_m": -3.0346834659576416,
+  "rmse_m": 7.184305667877197,
+  "spearman": 0.5814441266812056,
+  "pearson": 0.5201540589332581
+ },
+ "agreement_night_shots": {
+  "n_cells": 1832,
+  "mean_difference_m": -2.912860631942749,
+  "rmse_m": 7.2253031730651855,
+  "spearman": 0.5823568144148069,
+  "pearson": 0.5181382298469543
+ },
+ "bias_index_vs_disagreement": {
+  "spearman": 0.14902400215674652,
+  "p": 6.66475631838069e-11,
+  "by_tercile": [
+   {
+    "bias_tercile": "low bias",
+    "bias_pct_median": 1.9805028438568115,
+    "abs_diff_median_m": 4.393104553222656,
+    "n_cells": 633
+   },
+   {
+    "bias_tercile": "mid bias",
+    "bias_pct_median": 6.236390590667725,
+    "abs_diff_median_m": 5.218127250671387,
+    "n_cells": 633
+   },
+   {
+    "bias_tercile": "high bias",
+    "bias_pct_median": 15.631638526916504,
+    "abs_diff_median_m": 5.939578056335449,
+    "n_cells": 634
+   }
+  ]
+ },
+ "height_relation": {
+  "intercept_m": 8.61043666057388,
+  "slope": 0.6454610441536973,
+  "r2_in_sample": 0.27056015632984115,
+  "cv_rmse_m": 6.588358930281808,
+  "cv_mean_residual_m": 0.16945931572663156,
+  "n_blocks": 42,
+  "block_depth": 7,
+  "folds": 5
+ },
+ "biomass_lower_than_gedi": {
+  "share_cells_biomass_lower": 0.7773684210526316,
+  "median_difference_m": -3.8315510749816895,
+  "mean_difference_m": -3.0346834659576416,
+  "mean_difference_95ci_block_bootstrap_m": [
+   -4.394133567810059,
+   -1.056008473038675
+  ],
+  "crossover_height_m": 24.286292150943826,
+  "by_gedi_height_third": [
+   {
+    "gedi_third": "low",
+    "gedi_median_m": 10.404999732971191,
+    "mean_difference_m": 2.098876476287842,
+    "share_biomass_lower": 0.4842271293375394,
+    "n_cells": 634
+   },
+   {
+    "gedi_third": "mid",
+    "gedi_median_m": 19.530000686645508,
+    "mean_difference_m": -4.568666934967041,
+    "share_biomass_lower": 0.8736176935229067,
+    "n_cells": 633
+   },
+   {
+    "gedi_third": "tall",
+    "gedi_median_m": 25.649999618530273,
+    "mean_difference_m": -6.642369747161865,
+    "share_biomass_lower": 0.9747235387045814,
+    "n_cells": 633
+   }
+  ]
+ },
+ "sensitivity_pass_weighting": {
+  "esa_bias_weighted": {
+   "n_cells": 1900,
+   "mean_difference_m": -3.0346834659576416,
+   "rmse_m": 7.184305667877197,
+   "spearman": 0.5814441266812056,
+   "pearson": 0.5201540589332581,
+   "intercept_m": 8.61043666057388,
+   "slope": 0.6454610441536973,
+   "cv_rmse_m": 6.588358930281808
+  },
+  "pixel_count_weighted": {
+   "n_cells": 1900,
+   "mean_difference_m": -3.348217487335205,
+   "rmse_m": 7.2565507888793945,
+   "spearman": 0.5893019703686163,
+   "pearson": 0.5308066606521606,
+   "intercept_m": 8.582466767415596,
+   "slope": 0.660405582623338,
+   "cv_rmse_m": 6.560620321603838
+  },
+  "cells_with_2plus_passes": 537,
+  "median_abs_change_m_where_2plus_passes": 0.5071353912353516
+ },
+ "ebv_cells": {
+  "forest": 4386,
+  "height": 2570,
+  "height_gedi": 4373,
+  "cover": 4372,
+  "complexity_cv": 2570,
+  "complexity_fhd": 4372,
+  "profile": 4372,
+  "burned_2024": 1077
+ },
+ "selection": {
+  "forest_min_tree_cover": 0.5,
+  "min_gedi_shots": 5,
+  "max_burned_share_2024": 0.05
+ }
+}

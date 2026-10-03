@@ -1,0 +1,52 @@
+{
+  "shape": [
+    10205
+  ],
+  "data_type": "float32",
+  "chunk_grid": {
+    "name": "regular",
+    "configuration": {
+      "chunk_shape": [
+        10205
+      ]
+    }
+  },
+  "chunk_key_encoding": {
+    "name": "default",
+    "configuration": {
+      "separator": "/"
+    }
+  },
+  "fill_value": "NaN",
+  "codecs": [
+    {
+      "name": "bytes",
+      "configuration": {
+        "endian": "little"
+      }
+    },
+    {
+      "name": "zstd",
+      "configuration": {
+        "level": 0,
+        "checksum": false
+      }
+    }
+  ],
+  "attributes": {
+    "standard_name": "canopy_height",
+    "units": "m",
+    "long_name": "BIOMASS forest height (H100), passes weighted by pixel count only (sensitivity check)",
+    "definition": "BIOMASS L2A forest height: 'forest upper canopy height (H100 Standard)' (BIOMASS Forest Height ATBD BIO-BPS-FH-ATBD-ARE-10343 v2.2.0, 2026-03-13, sec. 3.5.1); 'Top Canopy Height (TCH)' (BIOMASS Forest Height Products Format Specification BIO-BPS-FHPFD-ARE-010256 v3.4.0, sec. 4.2)",
+    "cell_methods": "area: mean",
+    "grid_mapping": "crs",
+    "coordinates": "cell_ids",
+    "_FillValue": "AAAAAAAA+H8="
+  },
+  "dimension_names": [
+    "cells"
+  ],
+  "zarr_format": 3,
+  "node_type": "array",
+  "storage_transformers": []
+}

@@ -16,6 +16,10 @@
 # %% [markdown]
 # # 01 — Data download
 #
+# > **In the published Jupyter Book this step is shown without outputs.** It needs ESA MAAP and NASA
+# > Earthdata credentials and hours of downloads. Its product, the per-cell store
+# > `data/clean/beni_canopy_height.zarr`, is committed, so `03` and `04` run from it.
+#
 # Region: the Beni lowlands, Bolivia (bbox lon −67.5 to −64.5, lat −15.5 to −12.5), as in
 # `beni-fire-biomass-healpix` and the ESA Frontiers `beni-pipeline`.
 #

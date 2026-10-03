@@ -59,10 +59,15 @@ jobs:
           done
 
       # Glob, not a hard-coded list — new notebooks are picked up automatically.
+      # This study: 01 (credentials, hours of downloads) and 02 (needs 01's raw data) are shown
+      # without outputs; 03-04 run from the committed per-cell store.
       - name: Execute notebooks
         if: steps.guard.outputs.ready == 'true'
         run: |
           for nb in notebooks/*.ipynb; do
+            case "$(basename "$nb")" in
+              01_*|02_*) echo "::notice::$nb shown without outputs (needs ESA MAAP / NASA Earthdata credentials and raw data)"; continue ;;
+            esac
             echo "::group::Executing $nb"
             pixi run jupyter execute --inplace "$nb"
             echo "::endgroup::"

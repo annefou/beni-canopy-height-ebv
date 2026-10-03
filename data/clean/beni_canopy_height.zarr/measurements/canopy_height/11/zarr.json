@@ -1,0 +1,42 @@
+{
+  "attributes": {
+    "zarr_conventions": [
+      {
+        "uuid": "7b255807-140c-42ca-97f6-7a1cfecdbc38",
+        "name": "dggs",
+        "schema_url": "https://raw.githubusercontent.com/zarr-conventions/dggs/refs/tags/v1/schema.json",
+        "spec_url": "https://github.com/zarr-conventions/dggs/blob/v1/README.md",
+        "description": "Discrete Global Grid Systems convention for zarr"
+      }
+    ],
+    "dggs": {
+      "name": "healpix",
+      "refinement_level": 11,
+      "indexing_scheme": "nested",
+      "ellipsoid": {
+        "name": "wgs84",
+        "semi_major_axis": 6378137.0,
+        "inverse_flattening": 298.257223563
+      },
+      "spatial_dimension": "cells",
+      "coordinate": "cell_ids",
+      "compression": "none"
+    },
+    "Conventions": "CF-1.8",
+    "title": "Beni lowlands: inputs for the EBV Ecosystem Vertical Profile on HEALPix",
+    "region_bbox_lonlat": [
+      -67.5,
+      -15.5,
+      -64.5,
+      -12.5
+    ],
+    "forest_min_tree_cover_fraction": 0.5,
+    "gedi_first_shot": "2019-04-05",
+    "gedi_last_shot": "2025-07-09",
+    "producer": "healpix-connector 0.1.0",
+    "biomass_products": "[{\"id\":\"BIO_FP_FH__L2A_20260818T222915_20260830T222943_T_G01_M04_C___T014_F168_02_DXMZCK\",\"start\":\"2026-08-18T22:29:15.039Z\",\"processor\":{\"Biomass L2a Processor\":\"4.4.5\"},\"median_bias_pct\":16.72,\"median_height_forest_px_m\":9.9,\"median_height_nonforest_px_m\":7.0,\"excluded_by_bias_rule\":false,\"excluded\":false},{\"id\":\"BIO_FP_FH__L2A_20260818T222856_20260830T222924_T_G01_M04_C___T014_F167_02_DXPLEX\",\"start\":\"2026-08-18T22:28:56.027Z\",\"processor\":{\"Biomass L2a Processor\":\"4.4.5\"},\"median_bias_pct\":13.19,\"median_height_forest_px_m\":5.8,\"median_height_nonforest_px_m\":8.3,\"excluded_by_bias_rule\":false,\"excluded\":false},{\"id\":\"BIO_FP_FH__L2A_20260818T222837_20260830T222905_T_G01_M04_C___T014_F166_02_DXMZLO\",\"start\":\"2026-08-18T22:28:37.018Z\",\"processor\":{\"Biomass L2a Processor\":\"4.4.5\"},\"median_bias_pct\":13.33,\"median_height_forest_px_m\":6.9,\"median_height_nonforest_px_m\":7.0,\"excluded_by_bias_rule\":false,\"excluded\":false},{\"id\":\"BIO_FP_FH__L2A_20260728T222841_20260809T222910_T_G01_M04_C___T014_F167_02_DY52DG\",\"start\":\"2026-07-28T22:28:41.670Z\",\"processor\":{\"Biomass L2a Processor\":\"4.4.5\"},\"median_bias_pct\":4.83,\"median_height_forest_px_m\":10.0,\"median_height_nonforest_px_m\":8.5,\"excluded_by_bias_rule\":false,\"excluded\":false},{\"id\":\"BIO_FP_FH__L2A_20260725T222858_20260806T222927_T_G01_M04_C___T014_F168_02_DY5028\",\"start\":\"2026-07-25T22:28:58.831Z\",\"processor\":{\"Biomass L2a Processor\":\"4.4.5\"},\"median_bias_pct\":0.18,\"median_height_forest_px_m\":20.0,\"median_height_nonforest_px_m\":7.6,\"excluded_by_bias_rule\":true,\"excluded\":false},{\"id\":\"BIO_FP_FH__L2A_20260725T222820_20260806T222849_T_G01_M04_C___T014_F166_02_DY52J8\",\"start\":\"2026-07-25T22:28:20.797Z\",\"processor\":{\"Biomass L2a Processor\":\"4.4.5\"},\"median_bias_pct\":0.14,\"median_height_forest_px_m\":30.1,\"median_height_nonforest_px_m\":29.9,\"excluded_by_bias_rule\":true,\"excluded\":true},{\"id\":\"BIO_FP_FH__L2A_20260707T222847_20260719T222915_T_G01_M04_C___T014_F168_02_DVHDW8\",\"start\":\"2026-07-07T22:28:47.397Z\",\"processor\":{\"Biomass L2a Processor\":\"4.4.5\"},\"median_bias_pct\":3.89,\"median_height_forest_px_m\":16.4,\"median_height_nonforest_px_m\":4.8,\"excluded_by_bias_rule\":false,\"excluded\":false},{\"id\":\"BIO_FP_FH__L2A_20260707T222828_20260719T222856_T_G01_M04_C___T014_F167_02_DVHFG6\",\"start\":\"2026-07-07T22:28:28.386Z\",\"processor\":{\"Biomass L2a Processor\":\"4.4.5\"},\"median_bias_pct\":9.64,\"median_height_forest_px_m\":6.0,\"median_height_nonforest_px_m\":5.3,\"excluded_by_bias_rule\":false,\"excluded\":false},{\"id\":\"BIO_FP_FH__L2A_20260707T222809_20260719T222837_T_G01_M04_C___T014_F166_02_DVHELK\",\"start\":\"2026-07-07T22:28:09.377Z\",\"processor\":{\"Biomass L2a Processor\":\"4.4.5\"},\"median_bias_pct\":9.87,\"median_height_forest_px_m\":8.7,\"median_height_nonforest_px_m\":4.9,\"excluded_by_bias_rule\":false,\"excluded\":false},{\"id\":\"BIO_FP_FH__L2A_20260607T222435_20260619T222503_T_G01_M03_C___T014_F168_02_DU0C77\",\"start\":\"2026-06-07T22:24:35.805Z\",\"processor\":{\"Biomass L2a Processor\":\"4.4.4\"},\"median_bias_pct\":6.67,\"median_height_forest_px_m\":9.6,\"median_height_nonforest_px_m\":6.8,\"excluded_by_bias_rule\":false,\"excluded\":false},{\"id\":\"BIO_FP_FH__L2A_20260607T222416_20260619T222444_T_G01_M03_C___T014_F167_02_DU06P7\",\"start\":\"2026-06-07T22:24:16.796Z\",\"processor\":{\"Biomass L2a Processor\":\"4.4.4\"},\"median_bias_pct\":16.8,\"median_height_forest_px_m\":6.1,\"median_height_nonforest_px_m\":5.6,\"excluded_by_bias_rule\":false,\"excluded\":false},{\"id\":\"BIO_FP_FH__L2A_20260607T222357_20260619T222425_T_G01_M03_C___T014_F166_02_DTZT2N\",\"start\":\"2026-06-07T22:23:57.788Z\",\"processor\":{\"Biomass L2a Processor\":\"4.4.4\"},\"median_bias_pct\":23.12,\"median_height_forest_px_m\":6.3,\"median_height_nonforest_px_m\":4.0,\"excluded_by_bias_rule\":false,\"excluded\":false},{\"id\":\"BIO_FP_FH__L2A_20260517T222423_20260529T222450_T_G01_M03_C___T014_F168_02_DTF9V9\",\"start\":\"2026-05-17T22:24:23.075Z\",\"processor\":{\"Biomass L2a Processor\":\"4.4.4\"},\"median_bias_pct\":1.32,\"median_height_forest_px_m\":17.2,\"median_height_nonforest_px_m\":15.8,\"excluded_by_bias_rule\":false,\"excluded\":false},{\"id\":\"BIO_FP_FH__L2A_20260517T222404_20260529T222431_T_G01_M03_C___T014_F167_02_DTF86Z\",\"start\":\"2026-05-17T22:24:04.065Z\",\"processor\":{\"Biomass L2a Processor\":\"4.4.4\"},\"median_bias_pct\":4.24,\"median_height_forest_px_m\":14.8,\"median_height_nonforest_px_m\":10.5,\"excluded_by_bias_rule\":false,\"excluded\":false},{\"id\":\"BIO_FP_FH__L2A_20260517T222345_20260529T222412_T_G01_M03_C___T014_F166_02_DTFADS\",\"start\":\"2026-05-17T22:23:45.054Z\",\"processor\":{\"Biomass L2a Processor\":\"4.4.4\"},\"median_bias_pct\":8.76,\"median_height_forest_px_m\":11.6,\"median_height_nonforest_px_m\":6.1,\"excluded_by_bias_rule\":false,\"excluded\":false},{\"id\":\"BIO_FP_FH__L2A_20260426T222409_20260508T222437_T_G01_M03_C___T014_F168_02_DSPLN6\",\"start\":\"2026-04-26T22:24:09.358Z\",\"processor\":{\"Biomass L2a Processor\":\"4.4.4\"},\"median_bias_pct\":3.14,\"median_height_forest_px_m\":13.6,\"median_height_nonforest_px_m\":8.8,\"excluded_by_bias_rule\":false,\"excluded\":false},{\"id\":\"BIO_FP_FH__L2A_20260426T222350_20260508T222418_T_G01_M03_C___T014_F167_02_DSPFPZ\",\"start\":\"2026-04-26T22:23:50.348Z\",\"processor\":{\"Biomass L2a Processor\":\"4.4.4\"},\"median_bias_pct\":5.26,\"median_height_forest_px_m\":9.6,\"median_height_nonforest_px_m\":6.9,\"excluded_by_bias_rule\":false,\"excluded\":false},{\"id\":\"BIO_FP_FH__L2A_20260426T222331_20260508T222359_T_G01_M03_C___T014_F166_02_DSPMTE\",\"start\":\"2026-04-26T22:23:31.339Z\",\"processor\":{\"Biomass L2a Processor\":\"4.4.4\"},\"median_bias_pct\":6.69,\"median_height_forest_px_m\":10.1,\"median_height_nonforest_px_m\":6.5,\"excluded_by_bias_rule\":false,\"excluded\":false}]",
+    "coordinates": "height_bin_bounds"
+  },
+  "zarr_format": 3,
+  "node_type": "group"
+}

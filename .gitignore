@@ -29,6 +29,12 @@ __pycache__/
 data/*
 !data/.gitkeep
 !data/README.md
+# Shipped: the per-cell HEALPix store (derived per-cell values, ~1 MB) so CI and the book can run
+# 03-04 without credentials; raw inputs stay out (re-downloadable by 01).
+!data/clean/
+data/clean/*
+!data/clean/beni_canopy_height.zarr/
+!data/clean/biomass_products.csv
 
 # Prior-chain import cache — never committed; regenerated on demand from
 # the entry URI in CITATION.cff `references:`. The persistent pointer to

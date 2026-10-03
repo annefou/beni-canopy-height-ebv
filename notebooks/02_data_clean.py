@@ -16,6 +16,10 @@
 # %% [markdown]
 # # 02 — All layers on one grid, each saying what it is
 #
+# > **In the published Jupyter Book this step is shown without outputs.** It needs ESA MAAP and NASA
+# > Earthdata credentials and hours of downloads. Its product, the per-cell store
+# > `data/clean/beni_canopy_height.zarr`, is committed, so `03` and `04` run from it.
+#
 # **What we are producing.** A dataset for the GEO BON EBV *Ecosystem Vertical Profile* (class Ecosystem
 # Structure). EuropaBON D4.1 (2022) specifies it as the "Percentage of the relative vertical distribution of volume
 # and biomass in the ecosystem focus group". Valbuena et al. 2020 (Trends Ecol. Evol., doi:10.1016/j.tree.2020.03.006)

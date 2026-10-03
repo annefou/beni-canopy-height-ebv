@@ -1,0 +1,48 @@
+{
+  "attributes": {
+    "zarr_conventions": [
+      {
+        "uuid": "7b255807-140c-42ca-97f6-7a1cfecdbc38",
+        "name": "dggs",
+        "schema_url": "https://raw.githubusercontent.com/zarr-conventions/dggs/refs/tags/v1/schema.json",
+        "spec_url": "https://github.com/zarr-conventions/dggs/blob/v1/README.md",
+        "description": "Discrete Global Grid Systems convention for zarr"
+      }
+    ],
+    "dggs": {
+      "name": "healpix",
+      "refinement_level": 11,
+      "indexing_scheme": "nested",
+      "ellipsoid": {
+        "name": "wgs84",
+        "semi_major_axis": 6378137.0,
+        "inverse_flattening": 298.257223563
+      },
+      "spatial_dimension": "cells",
+      "coordinate": "cell_ids",
+      "compression": "none"
+    },
+    "Conventions": "CF-1.8",
+    "title": "Ecosystem Vertical Profile (EBV dataset, prototype), forest, Beni lowlands, from ESA BIOMASS and GEDI",
+    "ebv_class": "Ecosystem Structure",
+    "ebv_name": "Ecosystem Vertical Profile",
+    "ebv_source": "GEO BON EBV list, 6 classes and 21 EBV names (https://geobon.org/ebvs/what-are-ebvs/, read 2026-10-01)",
+    "ebv_specification": "EuropaBON D4.1 (2022): 'Percentage of the relative vertical distribution of volume and biomass in the ecosystem focus group'; traits after Valbuena et al. 2020, doi:10.1016/j.tree.2020.03.006",
+    "ebv_entity": "ecosystem focus group 'forest': ESA WorldCover 2021 class 10 'Tree cover' >= 50% of the cell",
+    "ebv_gaps": "vertical profile is of plant-area volume (GEDI), not biomass; profile and cover only where GEDI footprints fall; one BIOMASS season; no in-situ heights for validation",
+    "remote_sensing_biodiversity_product": "Vegetation height",
+    "remote_sensing_enabled_biodiversity_variable": "Habitat structure",
+    "skidmore_2021_mapping": "Skidmore et al. 2021, doi:10.1038/s41559-021-01451-x, Table 2 no. 14",
+    "height_relation_intercept_m": 8.61043666057388,
+    "height_relation_slope": 0.6454610441536973,
+    "height_relation_r2_in_sample": 0.27056015632984115,
+    "height_relation_cv_rmse_m": 6.588358930281808,
+    "height_relation_cv_mean_residual_m": 0.16945931572663156,
+    "height_relation_n_blocks": 42,
+    "height_relation_block_depth": 7,
+    "height_relation_folds": 5,
+    "coordinates": "height_bin_bounds"
+  },
+  "zarr_format": 3,
+  "node_type": "group"
+}

@@ -1,0 +1,51 @@
+{
+  "shape": [
+    10205
+  ],
+  "data_type": "float32",
+  "chunk_grid": {
+    "name": "regular",
+    "configuration": {
+      "chunk_shape": [
+        10205
+      ]
+    }
+  },
+  "chunk_key_encoding": {
+    "name": "default",
+    "configuration": {
+      "separator": "/"
+    }
+  },
+  "fill_value": "NaN",
+  "codecs": [
+    {
+      "name": "bytes",
+      "configuration": {
+        "endian": "little"
+      }
+    },
+    {
+      "name": "zstd",
+      "configuration": {
+        "level": 0,
+        "checksum": false
+      }
+    }
+  ],
+  "attributes": {
+    "units": "m",
+    "standard_name": "canopy_height",
+    "long_name": "GEDI RH98, cell median of night shots only",
+    "definition": "GEDI L2A V003 rh: 'Relative height metrics at 1 % interval' (GEDI L2A V3 product data dictionary); RH100 = elev_highestreturn - elev_lowestmode (GEDI L2 User Guide V2.1). rh98 is the height above the lowest mode at which 98 % of the returned waveform energy is reached.",
+    "grid_mapping": "crs",
+    "coordinates": "cell_ids",
+    "_FillValue": "AAAAAAAA+H8="
+  },
+  "dimension_names": [
+    "cells"
+  ],
+  "zarr_format": 3,
+  "node_type": "array",
+  "storage_transformers": []
+}
