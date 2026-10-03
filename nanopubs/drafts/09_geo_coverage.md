@@ -38,8 +38,10 @@ If unsure, prefer separate nanopubs — atomic coverage is easier to search and 
 
 The **original paper's** DOI (bare, starting `10.` — the form prepends `https://doi.org/`). Same DOI as the Quote (step 01) / CiTO (step 06). Read it from `CITATION.cff` `references:`; do not recall it.
 
+> **This study:** question-rooted, and its reference paper (Skidmore et al. 2021) is global with no study area. The coverage is therefore anchored on this study's own release, the Zenodo **version DOI** of v0.1.0 (recorded in `CITATION.cff` `identifiers:`), which deposits the source quoted below.
+
 ```
-10.1038/s41559-021-01451-x
+10.5281/zenodo.23120435
 ```
 
 ---
@@ -63,7 +65,7 @@ whole
 **Quoted Text** (textarea, required) — the **verbatim** sentence from the paper naming *this* area. Character-for-character from the PDF; never paraphrase. Each location needs its own quote.
 
 ```
-
+Region: the Beni lowlands, Bolivia (bbox lon −67.5 to −64.5, lat −15.5 to −12.5), as in `beni-fire-biomass-healpix` and the ESA Frontiers `beni-pipeline`.
 ```
 
 <!-- field: quotation-end -->
@@ -77,14 +79,14 @@ whole
 **Short ID for location** (text input, required) — slug for the URI suffix (lowercase, hyphenated), unique per location. E.g. `sado-estuary`, `westerschelde`, `amazon-basin`.
 
 ```
-
+beni-lowlands-bolivia
 ```
 
 <!-- field: location-label -->
 **Area name** (text input, required) — human-readable name as the paper frames it. E.g. `Sado Estuary, Portugal`. Typing this into the form's **location search** geocodes it and fills the geometry.
 
 ```
-
+Beni lowlands, Bolivia
 ```
 
 <!-- field: geometry -->
@@ -98,17 +100,15 @@ coverage
 **Geometry as Well-known Text (WKT)** (map / text, resolved in the form) — **Do NOT hand-write coordinates.** The form geocodes the area name to a polygon, or you draw it on the map. Only paste explicit `POINT(...)` / `POLYGON((...))` if the paper **states coordinates verbatim** — copied exactly. A hallucinated bounding box is a fabricated datum; leave blank otherwise.
 
 ```
-
+POLYGON((-67.5 -15.5, -64.5 -15.5, -64.5 -12.5, -67.5 -12.5, -67.5 -15.5))
 ```
 
 <!-- field: comment -->
 **Comment** (textarea, required) — one or two sentences on **how the quoted text supports** this being the coverage. Grounded in the paper, no new claims.
 
 ```
-
+The quoted sentence, from notebooks/01_data_download.py in the v0.1.0 deposit, states the study region and its bounding box; the geometry is that bounding box, with the coordinates copied as stated. All results of the study are for this box.
 ```
-
-### Location B *(duplicate the block above for each further distinct site; delete if only one location)*
 
 ## Publication note
 

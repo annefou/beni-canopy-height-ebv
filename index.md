@@ -1,10 +1,10 @@
 # beni-canopy-height-ebv
 
-> **Canopy height as an EBV dataset for *Ecosystem Vertical Profile* (EBV class Ecosystem Structure), from ESA BIOMASS calibrated against GEDI** — Beni lowlands, Bolivia.
+> **Canopy height as an EBV dataset for *Ecosystem Vertical Profile* (EBV class Ecosystem Structure), from ESA BIOMASS, validated against GEDI lidar** — Beni lowlands, Bolivia.
 >
 > Question-rooted study (PICO). Foundation reference: Skidmore et al. 2021, *Priority list of biodiversity metrics to observe from space*, [10.1038/s41559-021-01451-x](https://doi.org/10.1038/s41559-021-01451-x).
 
-**Question.** In the forest cells of the Beni lowlands, how well does ESA BIOMASS L2A forest height (H100, 2026) agree with GEDI L2A RH98 (2019–2025), and does a calibration model turn it into an EBV dataset for the GEO BON EBV *Ecosystem Vertical Profile*, with stated per-cell uncertainty? The EBVs themselves are defined by GEO BON (6 classes, 21 EBV names); this study produces a dataset for one of them, it does not define a new EBV.
+**Question.** In the forest cells of the Beni lowlands, how well does ESA BIOMASS L2A forest height (H100, 2026) agree with GEDI L2A RH98 (2019–2025), and, with GEDI cover, structural complexity and the vertical profile, what does a dataset for the GEO BON EBV *Ecosystem Vertical Profile* look like for this forest? The EBVs themselves are defined by GEO BON (6 classes, 21 EBV names); this study produces a dataset for one of them, it does not define a new EBV.
 
 **Semantics first.** BIOMASS "forest height" is an upper-canopy stand height (H100) from a 200 m radar inversion; GEDI RH98 is a lidar energy percentile over a 25 m footprint. Both fit the CF name `canopy_height`, but they are different quantities, so each variable here carries its definition quoted from its product documentation, and relating one to the other is a model, not an identity. The BIOMASS quality layer is a percentage bias (lower is better).
 
