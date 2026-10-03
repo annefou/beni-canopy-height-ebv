@@ -116,6 +116,31 @@ relation = {"intercept_m": float(fit.intercept), "slope": float(fit.slope), "r2_
 print(json.dumps(relation, indent=1))
 
 # %% [markdown]
+# ## 3a. Is BIOMASS lower than GEDI, and where?
+#
+# The share of cells where BIOMASS is lower, the median difference, and a 95 % interval for the mean difference
+# from a spatial block bootstrap (resampling the same ~51 km blocks, 2000 draws). The breakdown by thirds of GEDI
+# height shows where the difference changes sign; grouping by the reference height exaggerates such a pattern
+# (regression to the mean), so it is read together with the fitted relation of section 3.
+
+# %%
+d = cal["biomass_forest_height"] - cal["gedi_rh98"]
+boot_rng = np.random.default_rng(1)
+by_block = {b: d[cal["block"] == b].to_numpy() for b in blocks}
+boot = [np.concatenate([by_block[b] for b in boot_rng.choice(blocks, len(blocks), replace=True)]).mean()
+        for _ in range(2000)]
+lower = {"share_cells_biomass_lower": float((d < 0).mean()), "median_difference_m": float(d.median()),
+         "mean_difference_m": float(d.mean()),
+         "mean_difference_95ci_block_bootstrap_m": [float(x) for x in np.percentile(boot, [2.5, 97.5])],
+         "crossover_height_m": float(relation["intercept_m"] / (1 - relation["slope"])) if relation["slope"] < 1 else None}
+thirds = (cal.assign(diff=d, gedi_third=pd.qcut(cal["gedi_rh98"], 3, labels=["low", "mid", "tall"]))
+          .groupby("gedi_third", observed=True)
+          .agg(gedi_median_m=("gedi_rh98", "median"), mean_difference_m=("diff", "mean"),
+               share_biomass_lower=("diff", lambda x: (x < 0).mean()), n_cells=("diff", "size")))
+lower["by_gedi_height_third"] = thirds.reset_index().astype({"gedi_third": str}).to_dict("records")
+print(json.dumps(lower, indent=1))
+
+# %% [markdown]
 # ## 3b. Sensitivity: combining BIOMASS passes without the bias weight
 #
 # ESA's weight 1/(0.01 + bias) lets a pass with a very small bias index dominate the cells it overlaps. Since the
@@ -244,6 +269,7 @@ summary = {"agreement_all_shots": agree, "agreement_night_shots": agree_night,
            "bias_index_vs_disagreement": {"spearman": float(rho_bias.statistic), "p": float(rho_bias.pvalue),
                                           "by_tercile": by_bias.reset_index().astype({"bias_tercile": str}).to_dict("records")},
            "height_relation": relation,
+           "biomass_lower_than_gedi": lower,
            "sensitivity_pass_weighting": sensitivity,
            "ebv_cells": {"forest": int(len(F)), "height": has("biomass_forest_height"), "height_gedi": has("gedi_rh98"),
                          "cover": has("gedi_cover"), "complexity_cv": has("biomass_fh_within_cell_cv"),
