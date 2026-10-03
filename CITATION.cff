@@ -1,5 +1,19 @@
 cff-version: 1.2.0
-title: "beni-canopy-height-ebv"
+title: "Canopy height for the Essential Biodiversity Variable Ecosystem Vertical Profile from ESA BIOMASS and NASA GEDI: Beni lowland forests, Bolivia, on WGS84 HEALPix"
+abstract: >-
+  A dataset for the GEO BON Essential Biodiversity Variable Ecosystem Vertical
+  Profile (class Ecosystem Structure) for the forest focus group of the Beni
+  savanna-forest mosaic, Bolivia: ecosystem height from ESA BIOMASS Level-2A
+  forest height (2026), ecosystem cover, structural complexity and the relative
+  vertical profile from NASA GEDI L2A/L2B version 3, and forest from ESA
+  WorldCover 2021, all on HEALPix depth 11 on the WGS84 ellipsoid. Each variable
+  carries its definition quoted from its product documentation. Compared on 1,900
+  forest cells, BIOMASS forest height is lower than GEDI canopy height on average
+  (mean -3.0 m, 95 percent block-bootstrap interval -4.4 to -1.1 m; lower in 78
+  percent of cells) but not in low canopies, and ranks forests only moderately
+  consistently (Spearman 0.58). Outcome: partially supported. Includes a
+  Snakemake pipeline, jupytext notebooks, the per-cell store and a FORRT
+  nanopublication chain.
 message: "If you use this software, please cite it as below."
 type: software
 authors:
@@ -10,7 +24,7 @@ authors:
 repository-code: "https://github.com/annefou/beni-canopy-height-ebv"
 license: MIT
 version: "0.1.0"
-date-released: "2026-10-01"
+date-released: "2026-10-03"
 # Identifiers below are recorded AUTOMATICALLY on each release by
 # .github/workflows/release-identifiers.yml — don't fill them in by hand.
 #
@@ -23,15 +37,20 @@ date-released: "2026-10-01"
 # named was gone and "edit by hand" was the only path left. Two repos built from
 # this template then recorded the version DOI two different ways — one a
 # structured identifier, one a prose comment. Hence the automation.)
-doi: "{{ZENODO_DOI}}"
-identifiers:
-  - type: doi
-    value: "{{ZENODO_DOI}}"
-    description: "Concept DOI (resolves to the latest version) — cite the project"
-  # On release, the workflow adds:
+# On release, the workflow adds `doi:` and `identifiers:`:
   #   - type: doi   value: <version DOI>  "Version DOI for vX.Y.Z — pins this exact release; cite this from nanopubs"
   #   - type: swh   value: swh:1:rev:<commit>;origin=<repo>  "Software Heritage ID of the vX.Y.Z source tree"
 keywords:
+  - Essential Biodiversity Variables
+  - Ecosystem Vertical Profile
+  - canopy height
+  - forest structure
+  - ESA BIOMASS
+  - GEDI
+  - lidar
+  - synthetic aperture radar
+  - HEALPix
+  - Bolivia
   - replication
   - reproducibility
   - FORRT
@@ -49,3 +68,19 @@ references:
     start: 896
     end: 906
     doi: "10.1038/s41559-021-01451-x"
+  - type: article
+    title: "Standardizing Ecosystem Morphological Traits from 3D Information Sources"
+    authors:
+      - family-names: "Valbuena"
+        given-names: "Ruben"
+    year: "2020"
+    journal: "Trends in Ecology & Evolution"
+    doi: "10.1016/j.tree.2020.03.006"
+  - type: article
+    title: "Essential Biodiversity Variables"
+    authors:
+      - family-names: "Pereira"
+        given-names: "H. M."
+    year: "2013"
+    journal: "Science"
+    doi: "10.1126/science.1229931"
