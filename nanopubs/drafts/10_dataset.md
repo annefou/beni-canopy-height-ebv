@@ -29,15 +29,24 @@ This is the same dataset step 06 cites as `usesDataFrom`.
 10.57780/bio-65e97bc
 ```
 
-> **Check what the platform mints from this.** The template declares `fdo` as
-> `nt:LocalResource, nt:UriPlaceholder` labelled *"full URI (e.g. handle.net) or
-> short suffix"*, and the form offers no separate access-URL field. A bare DOI is
-> therefore read as a **suffix**, so the dataset resource is given a URI inside
-> the nanopublication's own namespace rather than being identified by the DOI.
-> If the published TriG shows the dataset as `…/np/RA…/10.57780/bio-65e97bc`
-> rather than as the DOI, this record and step 06's
-> `usesDataFrom <https://doi.org/10.57780/bio-65e97bc>` are describing two
-> different resources, and nothing links them.
+> **Confirmed: the DOI is minted as a local suffix, not used as the identifier.**
+> `fdo` is declared `nt:LocalResource, nt:UriPlaceholder` ("full URI … or short
+> suffix"), and generating this template with the bare DOI produces
+>
+> ```
+> <https://w3id.org/sciencelive/np/RA…/10.57780/bio-65e97bc> a fdof:FAIRDigitalObject
+> ```
+>
+> — the dataset is identified by a URI inside this nanopublication, **not** by
+> `https://doi.org/10.57780/bio-65e97bc`, which is what step 06 cites as
+> `usesDataFrom`. The two records therefore describe two different resources and
+> nothing links them.
+>
+> Entering the full resolver URL is not a workaround: the form validates `fdo`
+> against a regex that forbids `:`, so `https://…` is rejected outright. Until
+> the template or the form grows a way to say "this DOI *is* the dataset", the
+> link between the citation and this record has to be made some other way — a
+> CiTO citation pointing at this nanopublication's URI, for instance.
 
 <!-- field: label -->
 ### Dataset Title (text input, required, 3–300 chars)
@@ -61,10 +70,26 @@ Forest canopy height for the lowland forests of the Beni Department, Bolivia, de
 ```
 
 <!-- field: domain -->
-### Subject / Domain (text input, optional)
+### Subject / Domain (autocomplete, optional)
+
+**This field takes a URI from a fixed list, not free text.** The template
+declares it `nt:RestrictedChoicePlaceholder` with `nt:possibleValuesFrom`, so
+the form is an autocomplete over a controlled vocabulary (AGROVOC, EDAM, NCIT,
+OBO…). Pick from the dropdown rather than typing a description.
+
+Beware the failure mode: a value outside the list does not raise an error — the
+generated nanopublication comes back with **no assertion graph at all**, silently.
+If your preview shows an empty assertion, this field is the first thing to check.
+
+`http://edamontology.org/topic_3050` is EDAM's *Biodiversity*. The nearest
+alternatives in the list are `http://aims.fao.org/aos/agrovoc/c_6498`
+(*Remote Sensing*), `http://purl.obolibrary.org/obo/NCIT_C16526` (*Ecology*) and
+`http://aims.fao.org/aos/agrovoc/c_16129` (*Forest Management*). There is no
+"Essential Biodiversity Variables" entry; the EBV framing lives in the
+description instead.
 
 ```
-Essential Biodiversity Variables — Ecosystem Vertical Profile (GEO BON)
+http://edamontology.org/topic_3050
 ```
 
 <!-- field: creators -->
@@ -151,6 +176,21 @@ raster product unless the accompanying documentation is in a specific language.
 ```
 
 ```
+
+## Before publishing — check the preview
+
+Generating this template with unfilled optional fields leaks the template's own
+placeholder URIs into the assertion, e.g.
+
+```
+dc:creator <https://w3id.org/np/RAuVB37yy…/creator> ;
+dcat:contactPoint "https://w3id.org/np/RAuVB37yy…/contact"
+```
+
+Those are not values, they are the placeholders themselves. Publishing that
+would assert a meaningless creator in a signed, permanent record — so either
+fill *creators* and *contact email* properly, or confirm the preview does not
+carry a `…/creator` or `…/contact` URI before you sign.
 
 ## After publishing
 
