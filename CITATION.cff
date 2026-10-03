@@ -17,10 +17,10 @@ abstract: >-
 message: "If you use this software, please cite it as below."
 type: software
 authors:
-  - family-names: "Fouilloux"
-    given-names: "Anne"
-    orcid: "https://orcid.org/0000-0002-1784-2920"
-    affiliation: "LifeWatch ERIC"
+- family-names: "Fouilloux"
+  given-names: "Anne"
+  orcid: "https://orcid.org/0000-0002-1784-2920"
+  affiliation: "LifeWatch ERIC"
 repository-code: "https://github.com/annefou/beni-canopy-height-ebv"
 license: MIT
 version: "0.1.0"
@@ -41,46 +41,57 @@ date-released: "2026-10-03"
   #   - type: doi   value: <version DOI>  "Version DOI for vX.Y.Z — pins this exact release; cite this from nanopubs"
   #   - type: swh   value: swh:1:rev:<commit>;origin=<repo>  "Software Heritage ID of the vX.Y.Z source tree"
 keywords:
-  - Essential Biodiversity Variables
-  - Ecosystem Vertical Profile
-  - canopy height
-  - forest structure
-  - ESA BIOMASS
-  - GEDI
-  - lidar
-  - synthetic aperture radar
-  - HEALPix
-  - Bolivia
-  - replication
-  - reproducibility
-  - FORRT
-  - nanopublication
-  - Science-Live
+- Essential Biodiversity Variables
+- Ecosystem Vertical Profile
+- canopy height
+- forest structure
+- ESA BIOMASS
+- GEDI
+- lidar
+- synthetic aperture radar
+- HEALPix
+- Bolivia
+- replication
+- reproducibility
+- FORRT
+- nanopublication
+- Science-Live
 references:
-  - type: article
-    title: "Priority list of biodiversity metrics to observe from space"
-    authors:
-      - family-names: "Skidmore"
-        given-names: "Andrew K."
-    year: "2021"
-    journal: "Nature Ecology & Evolution"
-    volume: 5
-    start: 896
-    end: 906
-    doi: "10.1038/s41559-021-01451-x"
-  - type: article
-    title: "Standardizing Ecosystem Morphological Traits from 3D Information Sources"
-    authors:
-      - family-names: "Valbuena"
-        given-names: "Ruben"
-    year: "2020"
-    journal: "Trends in Ecology & Evolution"
-    doi: "10.1016/j.tree.2020.03.006"
-  - type: article
-    title: "Essential Biodiversity Variables"
-    authors:
-      - family-names: "Pereira"
-        given-names: "H. M."
-    year: "2013"
-    journal: "Science"
-    doi: "10.1126/science.1229931"
+- type: article
+  title: "Priority list of biodiversity metrics to observe from space"
+  authors:
+  - family-names: "Skidmore"
+    given-names: "Andrew K."
+  year: "2021"
+  journal: "Nature Ecology & Evolution"
+  volume: 5
+  start: 896
+  end: 906
+  doi: "10.1038/s41559-021-01451-x"
+- type: article
+  title: "Standardizing Ecosystem Morphological Traits from 3D Information Sources"
+  authors:
+  - family-names: "Valbuena"
+    given-names: "Ruben"
+  year: "2020"
+  journal: "Trends in Ecology & Evolution"
+  doi: "10.1016/j.tree.2020.03.006"
+- type: article
+  title: "Essential Biodiversity Variables"
+  authors:
+  - family-names: "Pereira"
+    given-names: "H. M."
+  year: "2013"
+  journal: "Science"
+  doi: "10.1126/science.1229931"
+doi: 10.5281/zenodo.23120434
+identifiers:
+- type: doi
+  value: 10.5281/zenodo.23120434
+  description: Concept DOI (resolves to the latest version) — cite the project
+- type: doi
+  value: 10.5281/zenodo.23120435
+  description: Version DOI for v0.1.0 — pins this exact release; cite this from nanopubs
+- type: swh
+  value: swh:1:rev:d4f5e310625409544886ff1c13b88f10a50fb5e4;origin=https://github.com/annefou/beni-canopy-height-ebv
+  description: Software Heritage ID of the v0.1.0 source tree

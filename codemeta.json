@@ -8,8 +8,12 @@
   "dateModified": "2026-10-03",
   "license": "https://spdx.org/licenses/MIT",
   "codeRepository": "https://github.com/annefou/beni-canopy-height-ebv",
-  "identifier": "{{ZENODO_DOI}}",
-  "@id": "{{ZENODO_DOI}}",
+  "identifier": [
+    "https://doi.org/10.5281/zenodo.23120434",
+    "https://doi.org/10.5281/zenodo.23120435",
+    "swh:1:rev:d4f5e310625409544886ff1c13b88f10a50fb5e4;origin=https://github.com/annefou/beni-canopy-height-ebv"
+  ],
+  "@id": "https://doi.org/10.5281/zenodo.23120434",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "Python",
