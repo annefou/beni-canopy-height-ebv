@@ -20,12 +20,6 @@ This file is the canonical registry of published nanopub URIs for this replicati
 | 07 | Research Software (if applicable) | _not applicable_ | |
 | 08 | Research Synthesis (if applicable) | _not applicable_ | |
 
-## Geographical coverage
-
-| Location | Template | URI | Published |
-|---|---|---|---|
-| Beni lowlands, Bolivia | Document geographical coverage | _not yet published_ | |
-
 ## Format
 
 URIs from Science Live are of the form `https://w3id.org/sciencelive/np/RA…`. URIs from Nanodash (used as a fallback when the Science Live UI hits a bug) are of the form `https://w3id.org/np/RA…`. Both are valid and citable.
