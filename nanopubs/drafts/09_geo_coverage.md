@@ -23,14 +23,18 @@
 ## Field-by-field draft
 
 <!-- field: paper -->
-### DOI of the paper (text input, required, prefix `https://doi.org/`)
+### DOI of the paper (text input, required)
+
+Enter the **bare DOI**, starting `10.` — the template supplies the
+`https://doi.org/` prefix itself (`nt:hasPrefix`), and enforces
+`nt:hasRegex "10.(\d)+/(\S)+"`, so pasting the full resolver URL is rejected.
 
 This chain is question-rooted: there is no original paper. The work this
 coverage describes is the dataset itself, so use the dataset DOI — the same one
 step 06 cites as `usesDataFrom` and `10_dataset.md` declares.
 
 ```
-https://doi.org/10.57780/bio-65e97bc
+10.57780/bio-65e97bc
 ```
 
 <!-- field: quoteType -->
